@@ -1,6 +1,7 @@
 ---
 name: frontlit-pages
-description: Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, themes from a product's design system, and custom Embed snippets. Use when the user wants a new or improved marketing page (home, pricing, features, launch, about), wants to change the site header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
+description: >-
+  Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, themes from a product's design system, and custom Embed snippets. Use when the user wants a new or improved marketing page (home, pricing, features, launch, about), wants to change the site header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
 ---
 
 # FrontLit Pages
