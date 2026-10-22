@@ -12,9 +12,10 @@ Agent skills for FrontLit.
 Any agent that supports skills (Claude Code, Codex, OpenCode, Gemini CLI, Cursor, Copilot…):
 
 ```
-npx skills add codelitdev/frontlit-skills --skill frontlit-docs
-npx skills add codelitdev/frontlit-skills --skill frontlit-pages
+npx skills add codelitdev/frontlit-skills
 ```
+
+This installs both `frontlit-docs` and `frontlit-pages`.
 
 Claude Code plugin:
 
