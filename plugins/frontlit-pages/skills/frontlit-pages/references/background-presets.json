@@ -1,0 +1,440 @@
+{
+  "source": "FrontLit packages/page-builder/src/builder/controls/pattern-presets.ts (Background → Pattern presets in the builder)",
+  "presets": [
+    {
+      "id": "dots",
+      "label": "Dots",
+      "category": "tile",
+      "description": "Subtle dot grid — the default SaaS texture",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%3E%3Ccircle%20cx%3D%224%22%20cy%3D%224%22%20r%3D%221.35%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%3E%3Ccircle%20cx%3D%224%22%20cy%3D%224%22%20r%3D%221.35%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "16px 16px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "dots-fine",
+      "label": "Fine dots",
+      "category": "tile",
+      "description": "Tighter, quieter polka texture",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22rgba(0%2C0%2C0%2C0.09)%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%2210%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22rgba(255%2C255%2C255%2C0.09)%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "10px 10px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "scatter",
+      "label": "Scatter",
+      "category": "tile",
+      "description": "Organic, uneven speckles",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%3E%0A%3Ccircle%20cx%3D%228%22%20cy%3D%2210%22%20r%3D%221.2%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2222%22%20cy%3D%226%22%20r%3D%220.9%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2238%22%20cy%3D%2214%22%20r%3D%221.5%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2214%22%20cy%3D%2228%22%20r%3D%221%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2230%22%20cy%3D%2224%22%20r%3D%220.8%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%221.1%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%226%22%20cy%3D%2240%22%20r%3D%220.95%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2224%22%20cy%3D%2242%22%20r%3D%221.3%22%20fill%3D%22rgba(0%2C0%2C0%2C0.12)%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%3E%0A%3Ccircle%20cx%3D%228%22%20cy%3D%2210%22%20r%3D%221.2%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2222%22%20cy%3D%226%22%20r%3D%220.9%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2238%22%20cy%3D%2214%22%20r%3D%221.5%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2214%22%20cy%3D%2228%22%20r%3D%221%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2230%22%20cy%3D%2224%22%20r%3D%220.8%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2242%22%20cy%3D%2236%22%20r%3D%221.1%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%226%22%20cy%3D%2240%22%20r%3D%220.95%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%0A%3Ccircle%20cx%3D%2224%22%20cy%3D%2242%22%20r%3D%221.3%22%20fill%3D%22rgba(255%2C255%2C255%2C0.12)%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "48px 48px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "grid",
+      "label": "Grid",
+      "category": "tile",
+      "description": "Clean square lattice",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%3E%3Cpath%20d%3D%22M32%200H0V32%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%3E%3Cpath%20d%3D%22M32%200H0V32%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "32px 32px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "graph-paper",
+      "label": "Graph paper",
+      "category": "tile",
+      "description": "Notebook-style minor + major grid",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280%22%20height%3D%2280%22%3E%0A%3Cpath%20d%3D%22M20%200V80M0%2020H80M40%200V80M0%2040H80M60%200V80M0%2060H80%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%0A%3Cpath%20d%3D%22M80%200H0V80%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.12)%22%20stroke-width%3D%221%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280%22%20height%3D%2280%22%3E%0A%3Cpath%20d%3D%22M20%200V80M0%2020H80M40%200V80M0%2040H80M60%200V80M0%2060H80%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%0A%3Cpath%20d%3D%22M80%200H0V80%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.12)%22%20stroke-width%3D%221%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "80px 80px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "dashed-grid",
+      "label": "Dashed grid",
+      "category": "tile",
+      "description": "Soft technical grid with dashed strokes",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2228%22%20height%3D%2228%22%3E%3Cpath%20d%3D%22M28%200H0V28%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%20stroke-dasharray%3D%223%204%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2228%22%20height%3D%2228%22%3E%3Cpath%20d%3D%22M28%200H0V28%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%20stroke-dasharray%3D%223%204%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "28px 28px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "diagonal",
+      "label": "Diagonal lines",
+      "category": "tile",
+      "description": "Classic hatch at 45°",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20d%3D%22M0%2024%2024%200M-6%206%206-6M18%2030%2030%2018%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20d%3D%22M0%2024%2024%200M-6%206%206-6M18%2030%2030%2018%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "24px 24px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "crosshatch",
+      "label": "Crosshatch",
+      "category": "tile",
+      "description": "Crossed diagonals for richer grain",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%3E%3Cpath%20d%3D%22M0%2020%2020%200M-5%205%205-5M15%2025%2025%2015M0%200%2020%2020M-5%2015%205%2025M15%20-5%2025%205%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%3E%3Cpath%20d%3D%22M0%2020%2020%200M-5%205%205-5M15%2025%2025%2015M0%200%2020%2020M-5%2015%205%2025M15%20-5%2025%205%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "20px 20px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "plus",
+      "label": "Plus marks",
+      "category": "tile",
+      "description": "Cross / plus marks — popular on product pages",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20d%3D%22M12%206.72v10.56M6.72%2012h10.56%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.12)%22%20stroke-width%3D%221.25%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20d%3D%22M12%206.72v10.56M6.72%2012h10.56%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.12)%22%20stroke-width%3D%221.25%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "24px 24px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "vertical",
+      "label": "Pinstripe",
+      "category": "tile",
+      "description": "Editorial vertical lines",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%3E%3Cpath%20d%3D%22M1%200V12%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%3E%3Cpath%20d%3D%22M1%200V12%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "12px 12px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "horizontal",
+      "label": "Ruled lines",
+      "category": "tile",
+      "description": "Horizontal notebook rules",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%3E%3Cpath%20d%3D%22M0%201H14%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%3E%3Cpath%20d%3D%22M0%201H14%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "14px 14px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "zigzag",
+      "label": "Zigzag",
+      "category": "tile",
+      "description": "Continuous zigzag band",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20d%3D%22M0%2012%20L6%204.800000000000001%20L12%2012%20L18%2019.200000000000003%20L24%2012%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221.25%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%3E%3Cpath%20d%3D%22M0%2012%20L6%204.800000000000001%20L12%2012%20L18%2019.200000000000003%20L24%2012%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221.25%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "24px 24px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "chevron",
+      "label": "Chevron",
+      "category": "tile",
+      "description": "Stacked chevrons for motion",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2228%22%20height%3D%2228%22%3E%3Cpath%20d%3D%22M0%209.799999999999999%20L14%2018.2%20L28%209.799999999999999%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221.25%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2228%22%20height%3D%2228%22%3E%3Cpath%20d%3D%22M0%209.799999999999999%20L14%2018.2%20L28%209.799999999999999%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221.25%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "28px 28px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "diamond",
+      "label": "Diamonds",
+      "category": "tile",
+      "description": "Geometric diamond lattice",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2228%22%20height%3D%2228%22%3E%3Cpath%20d%3D%22M14%201%20L27%2014%20L14%2027%20L1%2014%20Z%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2228%22%20height%3D%2228%22%3E%3Cpath%20d%3D%22M14%201%20L27%2014%20L14%2027%20L1%2014%20Z%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "28px 28px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "triangles",
+      "label": "Triangles",
+      "category": "tile",
+      "description": "Tessellated triangle outlines",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2236%22%20height%3D%2231%22%3E%3Cpath%20d%3D%22M18%201%20L35%2030.176%20L1%2030.176%20Z%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2236%22%20height%3D%2231%22%3E%3Cpath%20d%3D%22M18%201%20L35%2030.176%20L1%2030.176%20Z%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "36px 31px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "hexagon",
+      "label": "Hexagons",
+      "category": "tile",
+      "description": "Honeycomb / tech hex grid",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2256%22%20height%3D%2248%22%3E%3Cpath%20d%3D%22M14%200%20L42%200%20L56%2024%20L42%2048%20L14%2048%20L0%2024%20Z%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2256%22%20height%3D%2248%22%3E%3Cpath%20d%3D%22M14%200%20L42%200%20L56%2024%20L42%2048%20L14%2048%20L0%2024%20Z%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "56px 48px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "isometric",
+      "label": "Isometric",
+      "category": "tile",
+      "description": "3D cube lattice",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2241.568%22%3E%0A%3Cpath%20d%3D%22M24%200%20L48%2010.392%20L24%2020.784%20L0%2010.392%20Z%20M24%2020.784%20V41.568%20M0%2010.392%20V31.200000000000003%20L24%2041.568%20L48%2031.200000000000003%20V10.392%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2241.568%22%3E%0A%3Cpath%20d%3D%22M24%200%20L48%2010.392%20L24%2020.784%20L0%2010.392%20Z%20M24%2020.784%20V41.568%20M0%2010.392%20V31.200000000000003%20L24%2041.568%20L48%2031.200000000000003%20V10.392%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "48px 42px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "waves",
+      "label": "Waves",
+      "category": "tile",
+      "description": "Gentle repeating sine waves",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22120%22%20height%3D%2240%22%3E%3Cpath%20d%3D%22M0%2020%20Q15%200%2030%2020%20T60%2020%20T90%2020%20T120%2020%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221.25%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22120%22%20height%3D%2240%22%3E%3Cpath%20d%3D%22M0%2020%20Q15%200%2030%2020%20T60%2020%20T90%2020%20T120%2020%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221.25%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "120px 40px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "contour",
+      "label": "Contour",
+      "category": "tile",
+      "description": "Topographic contour strokes",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22150%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.06)%22%20stroke-width%3D%221%22%3E%0A%3Cpath%20d%3D%22M0%2C15%20Q37.5%2C-5%2075%2C15%20T150%2C15%20T225%2C15%20T300%2C15%22%2F%3E%0A%3Cpath%20d%3D%22M0%2C45%20Q37.5%2C25%2075%2C45%20T150%2C45%20T225%2C45%20T300%2C45%22%2F%3E%0A%3Cpath%20d%3D%22M0%2C75%20Q37.5%2C55%2075%2C75%20T150%2C75%20T225%2C75%20T300%2C75%22%2F%3E%0A%3Cpath%20d%3D%22M0%2C105%20Q37.5%2C85%2075%2C105%20T150%2C105%20T225%2C105%20T300%2C105%22%2F%3E%0A%3Cpath%20d%3D%22M0%2C135%20Q37.5%2C115%2075%2C135%20T150%2C135%20T225%2C135%20T300%2C135%22%2F%3E%0A%3C%2Fg%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22150%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.06)%22%20stroke-width%3D%221%22%3E%0A%3Cpath%20d%3D%22M0%2C15%20Q37.5%2C-5%2075%2C15%20T150%2C15%20T225%2C15%20T300%2C15%22%2F%3E%0A%3Cpath%20d%3D%22M0%2C45%20Q37.5%2C25%2075%2C45%20T150%2C45%20T225%2C45%20T300%2C45%22%2F%3E%0A%3Cpath%20d%3D%22M0%2C75%20Q37.5%2C55%2075%2C75%20T150%2C75%20T225%2C75%20T300%2C75%22%2F%3E%0A%3Cpath%20d%3D%22M0%2C105%20Q37.5%2C85%2075%2C105%20T150%2C105%20T225%2C105%20T300%2C105%22%2F%3E%0A%3Cpath%20d%3D%22M0%2C135%20Q37.5%2C115%2075%2C135%20T150%2C135%20T225%2C135%20T300%2C135%22%2F%3E%0A%3C%2Fg%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "300px 150px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "concentric",
+      "label": "Ripples",
+      "category": "tile",
+      "description": "Concentric circle tiles",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%0A%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2211.52%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%0A%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220.48%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%0A%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2229.44%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%3E%0A%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2211.52%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%0A%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220.48%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%0A%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2229.44%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.06)%22%20stroke-width%3D%221%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "64px 64px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "scales",
+      "label": "Scales",
+      "category": "tile",
+      "description": "Fish-scale / arc tile",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2219.2%22%3E%3Cpath%20d%3D%22M0%2019.2%20A16%2017.6%200%200%201%2032%2019.2%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2219.2%22%3E%3Cpath%20d%3D%22M0%2019.2%20A16%2017.6%200%200%201%2032%2019.2%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "32px 19px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "brick",
+      "label": "Brick",
+      "category": "tile",
+      "description": "Offset brick running bond",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%3E%0A%3Cpath%20d%3D%22M0%200H40V20H0Z%20M0%2020H20V40H0Z%20M20%2020H40V40H20Z%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%3E%0A%3Cpath%20d%3D%22M0%200H40V20H0Z%20M0%2020H20V40H0Z%20M20%2020H40V40H20Z%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "40px 40px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "circuit",
+      "label": "Circuit",
+      "category": "tile",
+      "description": "Tech / PCB-inspired traces",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.09)%22%20stroke-width%3D%221%22%20stroke-linecap%3D%22round%22%3E%0A%3Cpath%20d%3D%22M8%208H28V28H8Z%22%2F%3E%0A%3Cpath%20d%3D%22M36%2012H52V20H36Z%22%2F%3E%0A%3Cpath%20d%3D%22M12%2036H20V52H12Z%22%2F%3E%0A%3Cpath%20d%3D%22M28%208V4M8%2016H4M28%2020H36M20%2028V36M44%2020V36H36%22%2F%3E%0A%3Ccircle%20cx%3D%2236%22%20cy%3D%2236%22%20r%3D%223%22%2F%3E%0A%3Ccircle%20cx%3D%2252%22%20cy%3D%2244%22%20r%3D%222.5%22%2F%3E%0A%3Cpath%20d%3D%22M39%2036H49M52%2041.5V36%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.09)%22%20stroke-width%3D%221%22%20stroke-linecap%3D%22round%22%3E%0A%3Cpath%20d%3D%22M8%208H28V28H8Z%22%2F%3E%0A%3Cpath%20d%3D%22M36%2012H52V20H36Z%22%2F%3E%0A%3Cpath%20d%3D%22M12%2036H20V52H12Z%22%2F%3E%0A%3Cpath%20d%3D%22M28%208V4M8%2016H4M28%2020H36M20%2028V36M44%2020V36H36%22%2F%3E%0A%3Ccircle%20cx%3D%2236%22%20cy%3D%2236%22%20r%3D%223%22%2F%3E%0A%3Ccircle%20cx%3D%2252%22%20cy%3D%2244%22%20r%3D%222.5%22%2F%3E%0A%3Cpath%20d%3D%22M39%2036H49M52%2041.5V36%22%2F%3E%0A%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "64px 64px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0"
+      }
+    },
+    {
+      "id": "soft-mesh",
+      "label": "Soft mesh",
+      "category": "glow",
+      "description": "Colorful soft blobs — modern marketing hero",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "radial-gradient(at 20% 20%, rgba(99,102,241,0.18) 0px, transparent 50%), radial-gradient(at 80% 10%, rgba(236,72,153,0.14) 0px, transparent 45%), radial-gradient(at 50% 80%, rgba(34,211,238,0.12) 0px, transparent 50%), radial-gradient(at 90% 70%, rgba(250,204,21,0.1) 0px, transparent 40%)",
+        "backgroundImageDark": "radial-gradient(at 20% 20%, rgba(99,102,241,0.28) 0px, transparent 50%), radial-gradient(at 80% 10%, rgba(236,72,153,0.22) 0px, transparent 45%), radial-gradient(at 50% 80%, rgba(34,211,238,0.18) 0px, transparent 50%), radial-gradient(at 90% 70%, rgba(250,204,21,0.12) 0px, transparent 40%)",
+        "gradientBackgroundSize": "100% 100%",
+        "gradientBackgroundRepeat": "no-repeat",
+        "gradientBackgroundPosition": "center"
+      }
+    },
+    {
+      "id": "aurora",
+      "label": "Aurora",
+      "category": "glow",
+      "description": "Layered aurora bands",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "linear-gradient(135deg, rgba(56,189,248,0.2), transparent 50%), linear-gradient(225deg, rgba(167,139,250,0.22), transparent 50%), linear-gradient(45deg, rgba(52,211,153,0.15), transparent 40%)",
+        "backgroundImageDark": "linear-gradient(135deg, rgba(56,189,248,0.28), transparent 50%), linear-gradient(225deg, rgba(167,139,250,0.3), transparent 50%), linear-gradient(45deg, rgba(52,211,153,0.2), transparent 40%)",
+        "gradientBackgroundSize": "100% 100%",
+        "gradientBackgroundRepeat": "no-repeat",
+        "gradientBackgroundPosition": "center"
+      }
+    },
+    {
+      "id": "spotlight",
+      "label": "Spotlight",
+      "category": "glow",
+      "description": "Top-centered spotlight glow",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,0.22), transparent 55%)",
+        "backgroundImageDark": "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(129,140,248,0.35), transparent 55%)",
+        "gradientBackgroundSize": "100% 100%",
+        "gradientBackgroundRepeat": "no-repeat",
+        "gradientBackgroundPosition": "center"
+      }
+    },
+    {
+      "id": "bottom-glow",
+      "label": "Bottom glow",
+      "category": "glow",
+      "description": "Soft light rising from the bottom edge",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "radial-gradient(ellipse 70% 50% at 50% 110%, rgba(14,165,233,0.2), transparent 55%)",
+        "backgroundImageDark": "radial-gradient(ellipse 70% 50% at 50% 110%, rgba(56,189,248,0.28), transparent 55%)",
+        "gradientBackgroundSize": "100% 100%",
+        "gradientBackgroundRepeat": "no-repeat",
+        "gradientBackgroundPosition": "center"
+      }
+    },
+    {
+      "id": "corner-glow",
+      "label": "Corner glow",
+      "category": "glow",
+      "description": "Opposite-corner color accents",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "radial-gradient(ellipse 60% 50% at 0% 0%, rgba(244,63,94,0.16), transparent 50%), radial-gradient(ellipse 50% 45% at 100% 100%, rgba(59,130,246,0.16), transparent 50%)",
+        "backgroundImageDark": "radial-gradient(ellipse 60% 50% at 0% 0%, rgba(251,113,133,0.25), transparent 50%), radial-gradient(ellipse 50% 45% at 100% 100%, rgba(96,165,250,0.25), transparent 50%)",
+        "gradientBackgroundSize": "100% 100%",
+        "gradientBackgroundRepeat": "no-repeat",
+        "gradientBackgroundPosition": "center"
+      }
+    },
+    {
+      "id": "horizon",
+      "label": "Horizon fade",
+      "category": "glow",
+      "description": "Gentle vertical vignette toward the base",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "linear-gradient(180deg, transparent 0%, rgba(15,23,42,0.04) 55%, rgba(15,23,42,0.08) 100%)",
+        "backgroundImageDark": "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.04) 55%, rgba(255,255,255,0.1) 100%)",
+        "gradientBackgroundSize": "100% 100%",
+        "gradientBackgroundRepeat": "no-repeat",
+        "gradientBackgroundPosition": "center"
+      }
+    },
+    {
+      "id": "diagonal-fade",
+      "label": "Diagonal fade",
+      "category": "glow",
+      "description": "Two-tone diagonal wash",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "linear-gradient(135deg, rgba(99,102,241,0.12) 0%, transparent 45%, rgba(236,72,153,0.1) 100%)",
+        "backgroundImageDark": "linear-gradient(135deg, rgba(129,140,248,0.2) 0%, transparent 45%, rgba(244,114,182,0.16) 100%)",
+        "gradientBackgroundSize": "100% 100%",
+        "gradientBackgroundRepeat": "no-repeat",
+        "gradientBackgroundPosition": "center"
+      }
+    },
+    {
+      "id": "grid-fade",
+      "label": "Fading grid",
+      "category": "tile",
+      "description": "Grid that softens toward the edges",
+      "background": {
+        "type": "gradient",
+        "backgroundImage": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%3E%3Cpath%20d%3D%22M40%200H0V40%22%20fill%3D%22none%22%20stroke%3D%22rgba(0%2C0%2C0%2C0.12)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "backgroundImageDark": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%3E%3Cpath%20d%3D%22M40%200H0V40%22%20fill%3D%22none%22%20stroke%3D%22rgba(255%2C255%2C255%2C0.12)%22%20stroke-width%3D%221%22%2F%3E%3C%2Fsvg%3E\")",
+        "gradientBackgroundSize": "40px 40px",
+        "gradientBackgroundRepeat": "repeat",
+        "gradientBackgroundPosition": "0 0",
+        "gradientMaskImage": "radial-gradient(ellipse at center, black 25%, transparent 75%)"
+      }
+    }
+  ]
+}

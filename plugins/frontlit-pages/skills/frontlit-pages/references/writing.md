@@ -43,6 +43,9 @@ Give every section a `cssId` that the header, hero buttons or other pages link t
 - Keep each card description to one or two lines; similar lengths across items so cards line up.
 - Write for scanning: someone reading only the headings should understand the page.
 - Match the tone, terminology and capitalization of the product and existing pages (sentence case headings unless the site uses title case).
+- **Show proof high on the page** (who uses it, real numbers), right after the hero.
+- **Frame developer-only sections by situation** ("Adding uploads to your app? Skip the plumbing"), after the section everyone understands, and explain product jargon the first time it appears.
+- **Verify claims against the product's code or docs.** Hosted and self-hosted capabilities often differ.
 
 ## SEO
 
@@ -65,8 +68,10 @@ Give every section a `cssId` that the header, hero buttons or other pages link t
 - FrontLit blocks are responsive and follow the theme's type scale, colors and dark mode. Don't fight them: leave `titleSize` unset, and use `verticalPadding` / `maxWidth` enums instead of one-off sizes.
 - If you set `titleSize`, set all three breakpoints and keep mobile ≤ 40px.
 - Every color you set (`background.backgroundColor`, overlays, marquee item colors) needs a dark-mode value or must work on both. Check the preview in both modes.
-- Alternate section backgrounds sparingly (e.g. one tinted band for proof, a contrasting closing banner). A page where every section has a different background reads as noise.
-- Motion (marquee, animated embeds) is decoration: at most one per page, and nothing essential should depend on it.
+- Alternate section backgrounds sparingly (e.g. one tinted band for proof, a contrasting closing banner). A page where every section has a different background reads as noise. Tested texture and glow recipes (grain, mesh, eclipse arc, light beam) are in `references/design.md`.
+- Purposeful motion is welcome (a diagram that shows the flow, a logo strip, a slow glow). Every animation needs a `prefers-reduced-motion` fallback. Nothing essential may depend on motion, and text people are reading never moves. Usually no more than two moving things should be in view at once.
+- Keep hero text clearly legible over any background, especially at 390 px wide: contrast ≥ 4.5:1 for body and ≥ 3:1 for large headings, and texture masked away from text.
+- For layout, hierarchy and a visual QA checklist, see `references/design.md`; to match a product's design system in `theme`, see `references/theme-from-design-system.md`.
 
 ## Other kinds of pages
 
@@ -76,15 +81,14 @@ Not every page sells. Keep one clear next step, but let the page do its own job.
 | --- | --- | --- |
 | **About / company** | centered `hero` (title + one-line mission, buttons blanked), `content` without media for the story, `featured` for values or facts, `banner` with a soft next step ("See the product", "We're hiring") | Facts only: founding year, place, people, mission. Short is fine. |
 | **Contact / help** | centered `hero`, `support-form` (or `email-form` for sales enquiries), optional `faq` | Link to docs first so people self-serve. |
-| **Legal** (terms, privacy) | `hero` with the title and a "Last updated" `smallPrint`, one `rich-text` with `##` sections | `robotsAllowed` can stay true. Never write legal text yourself: use what the user provides. |
-| **Comparison** (`vs-x.json`) | `hero`, `content` blocks per difference, a `faq`, `banner` | Fair and factual about the competitor; dated claims. |
+| **Legal** (terms, privacy) | `hero` with the title and a "Last updated" `smallPrint`, one `rich-text` with `##` sections | `robotsAllowed` can stay true. Copy the product's real, existing terms and privacy text verbatim (current site, repository or user); never write, summarise or invent legal text. Publish terms and privacy together. |
 | **Waitlist / launch teaser** | centered `hero`, `featured`, `email-form` | `robotsAllowed: false` until launch if it shouldn't be found yet. |
 | **Thank-you / confirmation** | centered `hero` with one button | `robotsAllowed: false`. |
 
 ## Navigation
 
 - A new page visitors should find needs a link: in `site.json`'s header (main sections only, 4–6 links) or footer (everything else). Add it to the existing footer column it belongs to (Product, Resources, Company, Legal); add a column only for a new group.
-- A campaign or comparison page usually stays out of the header; link it from the footer or from related pages.
+- A campaign page usually stays out of the header; link it from the footer or from related pages.
 - Renaming or removing a page: add a `redirects` entry for the old path and update every link to it.
 
 ## Recipes

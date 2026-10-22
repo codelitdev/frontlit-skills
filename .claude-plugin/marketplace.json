@@ -15,7 +15,7 @@
     {
       "name": "frontlit-pages",
       "source": "./plugins/frontlit-pages",
-      "description": "Write FrontLit landing pages as JSON and validate them before opening a pull request."
+      "description": "Write and design FrontLit landing pages, as JSON in your repository or in the visual builder."
     }
   ]
 }

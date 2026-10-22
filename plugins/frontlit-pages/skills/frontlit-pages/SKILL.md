@@ -1,17 +1,21 @@
 ---
 name: frontlit-pages
-description: Write or edit FrontLit landing pages as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme). Use when the user wants a new or improved marketing page (home, pricing, features, launch, about, comparison), wants to change the site header, footer, redirects or theme in code, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
+description: Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, themes from a product's design system, and custom Embed snippets. Use when the user wants a new or improved marketing page (home, pricing, features, launch, about), wants to change the site header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
 ---
 
 # FrontLit Pages
 
-FrontLit can publish a site's landing pages from a folder of JSON files in the team's GitHub repository (GitHub only; GitLab and others aren't supported). Each file is one page built from FrontLit's blocks (hero, grid, pricing, FAQ…); `site.json` beside the folder holds the header, footer, theme and redirects. Every push to the publishing branch is validated and, if everything passes, published as one release. Your job is to write pages that pass on the first try and that convert.
+FrontLit can publish a site's landing pages from a folder of JSON files in the team's GitHub repository (GitHub only; GitLab and others aren't supported). Each file is one page built from FrontLit's blocks (hero, grid, pricing, FAQ…); `site.json` beside the folder holds the header, footer, theme and redirects. Every push to the publishing branch is validated and, if everything passes, published as one release. Your job is to write pages that pass on the first try, look designed rather than templated, and convert. Sites that edit pages in FrontLit's visual builder instead of Git use the same blocks and guidance; see `references/builder.md`.
 
 Read these as needed:
 
 - `references/format.md`: files, page and `site.json` keys, Markdown, media, links, validation codes and canonical form. **Read before writing any file.**
 - `references/blocks.md`: every block, its settings and what it's good for. **Read before choosing blocks.**
 - `references/writing.md`: page structure, headings, SEO, copy and section recipes.
+- `references/design.md`: page styles, section variations, page skeletons, hierarchy, rhythm, hero legibility, backgrounds (with `background-presets.json`), logo strips, diagrams and tables. **Read before planning a page**: pick a style first.
+- `references/embeds.md`: how `script` embeds run (inline, shadow root), the rules and a template. **Read before writing a snippet**; test it with `scripts/test-embed.mjs`.
+- `references/theme-from-design-system.md`: map a product's design tokens to `theme` (`scripts/oklch-to-hex.mjs`).
+- `references/builder.md`: working in the visual builder instead of Git: ground rules, workflow, editor quirks, automation. **Read before your first builder edit.**
 - `examples/frontlit/`: a valid site folder (home, pricing, a full launch page, `site.json`). Copy from it.
 
 ## 1. Find the site folder
@@ -56,7 +60,7 @@ It is a pre-check, not the authority, and there's no local preview. On the pull 
 
 ## Pages not in Git
 
-If the repository isn't connected for pages and the FrontLit MCP server is connected, the same blocks and the same writing guidance apply through its tools: `list_pages`, `get_page`, `create_page`, `update_page` (writes the draft only), `publish_page`. Differences: rich text there is TipTap JSON instead of Markdown, and media are uploaded MediaLit objects. Only call `publish_page` or `delete_page` when the user asks. If a tool answers that the page is managed in GitHub, switch to the files.
+If the repository isn't connected for pages, work in the visual builder and follow `references/builder.md`; blocks, writing, design and embeds guidance is the same. If the FrontLit MCP server is connected, the same applies through its tools: `list_pages`, `get_page`, `create_page`, `update_page` (writes the draft only), `publish_page`. Differences: rich text there is TipTap JSON instead of Markdown, and media are uploaded MediaLit objects. Only call `publish_page` or `delete_page` when the user asks. If a tool answers that the page is managed in GitHub, switch to the files.
 
 ## Rules
 
