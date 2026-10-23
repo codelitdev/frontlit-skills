@@ -18,7 +18,7 @@ Use this when the site's pages are edited in FrontLit's browser builder (the rep
 3. **Plan** the page (`writing.md`), then pick a style and section rhythm (`design.md`).
 4. **Build with blocks first** (`blocks.md`): set every visible text (unset fields show demo copy), one H1 (the hero), a CSS id on linked sections.
 5. **Embeds** only for what blocks can't do. Follow `embeds.md`, run `scripts/test-embed.mjs`, look at every screenshot, then paste.
-6. **SEO** under **Edit SEO settings**: title 50–60 characters, description 120–160, search engine visibility on unless private, social card 1200×630. For articles, the Excerpt is the description.
+6. **SEO** under **Edit SEO settings**: title 50–60 characters, description 120–160, search engine visibility on unless private, social card 1200×630. This title belongs only to the page. The website-wide name is **Website → Branding → Site title**, changed through MCP `update_team_settings` (see `mcp.md`). Branding saves directly, outside the page draft. For articles, the Excerpt is the description.
 7. **Review** with the visual QA in `design.md`, send screenshots and wait.
 8. **Publish only when told,** then check the live page at 1280 and 390 px in both modes, including interactive embeds.
 

@@ -113,5 +113,5 @@ Good for animated diagrams, data tables, tabbed code samples and logo strips wit
 
 Not page blocks: they live in `site.json` (`references/format.md`) and show on every page.
 
-- **header**: `layout` (`fixed`, `floating`, `centered`), `links: [{ "label", "href", "isButton" }]` (4–6 links), `ctaLabel` + `ctaHref` (the primary action, same as the homepage hero's), `linkAlignment`, `backdropBlur`, `logoCorners`. The logo and site name come from FrontLit's **Branding** settings, not from the file.
+- **header**: `layout` (`fixed`, `floating`, `centered`), `links: [{ "label", "href", "isButton" }]` (4–6 links), `ctaLabel` + `ctaHref` (the primary action, same as the homepage hero's), `linkAlignment`, `backdropBlur`, `logoCorners`. The logo and site name come from FrontLit's **Branding** settings, not from the file; use `get_team_settings` / `update_team_settings` (see `mcp.md`).
 - **footer**: `layout` (`columns`, `centered`, `minimal`), `tagline`, `columns: [{ "title", "links": [{ "label", "href" }] }]`, `copyrightText`, `showThemeSwitcher`.

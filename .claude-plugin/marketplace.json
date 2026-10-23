@@ -8,14 +8,9 @@
   },
   "plugins": [
     {
-      "name": "frontlit-docs",
-      "source": "./plugins/frontlit-docs",
-      "description": "Write FrontLit docs and port existing docs sites to FrontLit."
-    },
-    {
-      "name": "frontlit-pages",
-      "source": "./plugins/frontlit-pages",
-      "description": "Write and design FrontLit landing pages, as JSON in your repository or in the visual builder."
+      "name": "frontlit",
+      "source": "./plugins/frontlit",
+      "description": "FrontLit docs and landing-page skills, with a bundled FrontLit MCP connection for validation, live status and branding."
     }
   ]
 }
