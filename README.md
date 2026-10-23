@@ -5,7 +5,7 @@ Agent skills for FrontLit.
 | Skill | What it does |
 | --- | --- |
 | [`frontlit-docs`](plugins/frontlit/skills/frontlit-docs/SKILL.md) | Write FrontLit docs, or port an existing docs site (Fumadocs, Docusaurus, Mintlify, Nextra, GitBook, VitePress) to FrontLit and open a pull request |
-| [`frontlit-pages`](plugins/frontlit/skills/frontlit-pages/SKILL.md) | Write and design FrontLit landing pages: as JSON in the repository (`frontlit/pages/*.json`, `frontlit/site.json`, validated before a pull request) or in the visual builder. Includes website branding through MCP, design and background recipes, themes from a design system, and Embed snippets with a headless-Chrome test harness |
+| [`frontlit-pages`](plugins/frontlit/skills/frontlit-pages/SKILL.md) | Write and design FrontLit landing pages: as JSON in the repository (`frontlit/pages/*.json`, `frontlit/site.json`, validated before a pull request) or in the visual builder. Includes website branding through MCP, design and background recipes, site-wide theme creation, and Embed snippets with a headless-Chrome test harness |
 
 ## Install
 

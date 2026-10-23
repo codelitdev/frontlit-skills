@@ -1,64 +1,53 @@
 # Writing FrontLit pages that work
 
-A landing page has one visitor in mind and one action it wants from them. Decide both before choosing blocks.
+Start with the site's domain and the visitor's purpose. A founder's software landing page, a restaurant promotion, an article index and a portfolio need different information and voices.
 
-## Plan first
+## Plan from the content
 
-Write this down (in your head or the PR description) before any JSON:
+Before choosing blocks, identify the visitor, what they came to find or do, the available content, and the agreed visual direction. Use existing branding and relevant references (`design.md`). Ask for a reference when choosing between materially different directions; continue independent content discovery while waiting.
 
-1. **Visitor:** who lands here and from where (search, an ad, the docs, a launch post).
-2. **Action:** the one thing they should do (start a trial, book a demo, install, join the waitlist). It's the hero's primary button, the header CTA and the closing banner.
-3. **Objections:** the three questions that stop them (price, effort to switch, trust, "is this just X?"). They become sections and FAQ items.
-4. **Sections:** a list of blocks top to bottom, each with one job.
+Choose sections that support that purpose. The following are examples, not mandatory sequences:
 
-Pull facts from the repository: README, docs, pricing config, changelog, existing pages. Never invent customers, numbers, quotes, logos, integrations or prices.
+| Site / visitor purpose | Useful content and flow |
+| --- | --- |
+| SaaS / evaluate a product | Product demonstration, capabilities, relevant proof, pricing and questions that affect a buying decision. |
+| Restaurant / choose food or visit | Food-led promotion, real menu or specials, ordering/reservation links, locations and hours when supplied. |
+| Publication / find something to read | Lead story, article collections, topic navigation and readable summaries; a subscription prompt only if relevant. |
+| Commerce / choose a product | Product imagery, categories, useful details and actual purchase links. |
+| Portfolio / evaluate someone's work | Selected projects, case studies, relevant background and contact. |
+| Local service / assess and contact | Services, service area, relevant evidence and booking/contact details. |
 
-## Page structure
+Other domains follow the same principle: derive the structure from the content and purpose rather than forcing the closest example. Use multiple reading or browsing paths when useful. A benefit grid, pricing section, FAQ or closing CTA belongs only when it helps this visitor. Do not add one to fill a template.
 
-A typical marketing page, in order. Drop what you can't fill with real content.
-
-1. **hero:** outcome-led headline, one-sentence how, primary + secondary action, product image.
-2. **Proof** (optional): a `marquee` of integrations or customer names, or a `featured` row of numbers, only if real.
-3. **What it does:** `featured` (3–6 benefits) or `grid` (cards with screenshots).
-4. **How it works / depth:** 2–3 `content` blocks alternating left/right, or `featured` with `"layout": "numbered"` for steps.
-5. **Pricing** (or a link to `/pricing`).
-6. **faq:** real objections, 4–8 items.
-7. **banner:** the closing CTA, same action as the hero.
-
-Give every section a `cssId` that the header, hero buttons or other pages link to (`features`, `pricing`, `faq`).
+Pull facts from the repository, existing site or user. Never invent prices, menu items, ordering links, locations, hours, customers, metrics or testimonials to imitate a reference. Give a section a `cssId` when something links to it.
 
 ## Headings
 
-- **One H1 per page: the hero's title.** It's the page's main headline for readers, screen readers and search.
+- **One meaningful H1 per page, normally the hero title.** It's the page's main headline for readers, screen readers and search.
 - Every other block title is an H2 (the default). Grid and featured item titles render below that automatically.
-- Don't set `titleLevel` unless a page truly needs it (e.g. a second hero-style band should be `h2`). Never make the logo or a pre-title a heading.
+- Don't set `titleLevel` unless a page truly needs it (e.g. a second hero-style band should be `h2`). Choose the H1 for this page’s actual subject; avoid repeating the brand or adding an extra hero above a custom opening just to pass a lint rule.
 - Inside Markdown, start at `##` (or `###` under a block title), never `#`.
 
 ## Copy
 
-- **Headlines state outcomes**, not features or product names: "Ship docs from your repo" over "Introducing Acme Docs". Under ~10 words; highlight one phrase with `*asterisks*`.
-- **Sub-copy says how and for whom** in one or two sentences.
+- **Headlines match the domain and content:** a product benefit, a food promotion, a story title or a project name. Use the brand’s voice; highlighting with `*asterisks*` is optional.
+- **Sub-copy adds useful context** rather than repeating the headline or a generic promise.
 - **Buttons are verb + object:** "Start free", "Book a demo", "Read the docs". Never "Submit", "Learn more" twice on a page, or "Click here".
 - **Be specific:** numbers, names, limits, time saved. Cut adjectives that any competitor could use ("powerful", "seamless", "next-generation").
 - Keep each card description to one or two lines; similar lengths across items so cards line up.
 - Write for scanning: someone reading only the headings should understand the page.
 - Match the tone, terminology and capitalization of the product and existing pages (sentence case headings unless the site uses title case).
-- **Show proof high on the page** (who uses it, real numbers), right after the hero.
+- **Place evidence where it helps a decision.** Product proof may belong near a SaaS demonstration; article indexes and restaurant promotions do not automatically need a proof strip.
 - **Frame developer-only sections by situation** ("Adding uploads to your app? Skip the plumbing"), after the section everyone understands, and explain product jargon the first time it appears.
 - **Verify claims against the product's code or docs.** Hosted and self-hosted capabilities often differ.
 
 ## SEO
 
-- `title`: 50–60 characters, the page's main promise or keyword first. Don't add "| Brand"; FrontLit appends the site name.
-- `description`: 120–160 characters, outcome-focused, includes what the page is about in plain words. Every page needs one.
-- `socialImage`: 1200×630, readable when small. Put it in the repository (e.g. `frontlit/assets/og-pricing.png`) or use an `https://` URL.
-- File name = URL: short, lowercase, hyphenated, descriptive (`pricing.json`, `vs-notion.json`). Renaming a live page? Add a `redirects` entry in `site.json` from the old path.
-- `robotsAllowed: false` only for pages that shouldn't be found (thank-you pages, private landing pages for a campaign). Drafts use `published: false` instead.
-- Internal links between pages help both visitors and search; link to docs and related pages from content blocks.
+Page SEO lives outside the block list. Follow `seo.md` for the builder's SEO panel, Git fields, search visibility and social card image. File name = URL: choose a short, lowercase, hyphenated, descriptive slug (`pricing.json`, `vs-notion.json`). When renaming a live page, add a `redirects` entry in `site.json` from the old path. Link related pages and docs where useful to visitors.
 
 ## Media
 
-- Real product screenshots beat illustrations. Crop to the part that proves the headline.
+- Choose imagery for the domain: product UI for software, appetizing food for restaurants, work samples for portfolios and story photography for publications. Choose photos, illustrations or cutouts to support the composition; do not use generic icons as a substitute for meaningful imagery.
 - Keep repository images in one place, e.g. `frontlit/assets/`, and reference them relative to the page (`../assets/hero.png`).
 - Export at 2× the displayed size, under ~500 KB where possible (WebP/AVIF), and always set `alt` describing what the image shows.
 - For video, prefer `youtubeLink` (hero or media block) over embeds.
@@ -66,12 +55,12 @@ Give every section a `cssId` that the header, hero buttons or other pages link t
 ## Responsive and theme
 
 - FrontLit blocks are responsive and follow the theme's type scale, colors and dark mode. Don't fight them: leave `titleSize` unset, and use `verticalPadding` / `maxWidth` enums instead of one-off sizes.
-- If you set `titleSize`, set all three breakpoints and keep mobile ≤ 40px.
+- If you set `titleSize`, set all three breakpoints and check real line breaks at 390 px. Use 32–40 px as a starting point for ordinary mobile headings; larger campaign type needs enough room and a short title.
 - Every color you set (`background.backgroundColor`, overlays, marquee item colors) needs a dark-mode value or must work on both. Check the preview in both modes.
 - Alternate section backgrounds sparingly (e.g. one tinted band for proof, a contrasting closing banner). A page where every section has a different background reads as noise. Tested texture and glow recipes (grain, mesh, eclipse arc, light beam) are in `references/design.md`.
 - Purposeful motion is welcome (a diagram that shows the flow, a logo strip, a slow glow). Every animation needs a `prefers-reduced-motion` fallback. Nothing essential may depend on motion, and text people are reading never moves. Usually no more than two moving things should be in view at once.
 - Keep hero text clearly legible over any background, especially at 390 px wide: contrast ≥ 4.5:1 for body and ≥ 3:1 for large headings, and texture masked away from text.
-- For layout, hierarchy and a visual QA checklist, see `references/design.md`; to match a product's design system in `theme`, see `references/theme-from-design-system.md`.
+- For layout, hierarchy and a visual QA checklist, see `references/design.md`; for site-wide theme creation, see `references/theme.md`.
 
 ## Other kinds of pages
 
@@ -87,13 +76,13 @@ Not every page sells. Keep one clear next step, but let the page do its own job.
 
 ## Navigation
 
-- A new page visitors should find needs a link: in `site.json`'s header (main sections only, 4–6 links) or footer (everything else). Add it to the existing footer column it belongs to (Product, Resources, Company, Legal); add a column only for a new group.
+- A new page visitors should find needs a link: in `site.json`'s header (main sections only, a small set of relevant links) or footer (everything else). Add it to the existing footer column it belongs to (Product, Resources, Company, Legal); add a column only for a new group.
 - A campaign page usually stays out of the header; link it from the footer or from related pages.
 - Renaming or removing a page: add a `redirects` entry for the old path and update every link to it.
 
 ## Recipes
 
-Copy these into `layout`; replace every string with real content.
+These are optional software-marketing examples. Use only the recipes that fit the site; replace every string with real content. Other domains can use the same blocks with different compositions and copy.
 
 **Hero (product)**
 

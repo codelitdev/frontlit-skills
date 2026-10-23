@@ -21,7 +21,7 @@ Branding saves directly to team settings, outside page drafts and Git releases. 
 | --- | --- |
 | Discover publishing ownership | `get_documentation_github({})`; `binding.root` is the site folder and `binding.pagesDirectory` identifies Git-managed landing pages. `binding.docsEnabled` is independent. |
 | Read a builder-owned page | `list_pages` to find its ID, then `get_page({"pageId": "…"})`. Read the existing full layout before changing it. |
-| Change a builder-owned page's SEO title | `update_page({"pageId": "…", "title": "…"})`; this saves the page draft. `name` is the internal page name, not website branding. |
+| Change a builder-owned page's SEO | `update_page` accepts `title`, `description` and `robotsAllowed` and saves the page draft. It does not accept `socialImage`; use the builder for that field. `name` is the internal page name, not website branding. See `seo.md`. |
 | Change builder-owned page blocks | `update_page` with the page ID and revised layout. Rich text uses TipTap JSON here; Git page JSON uses Markdown. |
 | Publish a page | `publish_page({"pageId": "…"})` only when the user asked to publish. For Git-managed pages, use the repository/PR workflow instead. |
 | Inspect docs Git failures | `list_documentation_github_checks` / `get_documentation_github_check`; these reports concern docs and may redact diagnostic prose. Use available GitHub annotations for missing details. |

@@ -13,12 +13,12 @@ Use this when the site's pages are edited in FrontLit's browser builder (the rep
 
 ## Workflow
 
-1. **Orient.** Open the right team and site; list the existing pages, header, footer and theme. Ask which page to work on, its slug, and the one action it should drive.
-2. **Theme.** If the product has a design system and the user wants the site to match it, map its tokens (`theme-from-design-system.md`). Don't invent per-section colours.
+1. **Orient.** Open the right team and site; list the existing pages, header, footer and theme. Ask which page to work on, its slug, and the visitor purpose and visual references that should guide the design (see `design.md`).
+2. **Theme.** Review the existing theme. If the user wants a new one, design it for the site's audience and content (`theme.md`). Keep section colors coherent with it.
 3. **Plan** the page (`writing.md`), then pick a style and section rhythm (`design.md`).
 4. **Build with blocks first** (`blocks.md`): set every visible text (unset fields show demo copy), one H1 (the hero), a CSS id on linked sections.
 5. **Embeds** only for what blocks can't do. Follow `embeds.md`, run `scripts/test-embed.mjs`, look at every screenshot, then paste.
-6. **SEO** under **Edit SEO settings**: title 50–60 characters, description 120–160, search engine visibility on unless private, social card 1200×630. This title belongs only to the page. The website-wide name is **Website → Branding → Site title**, changed through MCP `update_team_settings` (see `mcp.md`). Branding saves directly, outside the page draft. For articles, the Excerpt is the description.
+6. **SEO:** Use the top bar's **Edit SEO settings** for the page's title, description, search visibility and social card image. Follow `seo.md`; this is page metadata, outside block settings. For articles, the Excerpt is the description.
 7. **Review** with the visual QA in `design.md`, send screenshots and wait.
 8. **Publish only when told,** then check the live page at 1280 and 390 px in both modes, including interactive embeds.
 
@@ -89,7 +89,7 @@ Prefer the FrontLit MCP tools (`list_pages`, `get_page`, `update_page`…) or Gi
 - **Reloads drop helper functions you injected;** reinstall them. After any reload, check that each change persisted.
 - **Never click the media library's "Remove".** It deletes the file permanently, even if a published page uses it.
 - **Never click the header logo in the canvas.** It can navigate away from the editor.
-- **Never click a theme's ✓ / "Use" unless asked.** It applies the theme to the whole site; see `theme-from-design-system.md`.
+- **Never click a theme's ✓ / "Use" unless asked.** It applies the theme to the whole site; see `theme.md`.
 
 ## Review without a draft preview link
 
@@ -97,7 +97,7 @@ There's no shareable draft preview URL yet (FrontLit #103), and the editor canva
 
 1. Test every embed locally with `scripts/test-embed.mjs` (1280 / 390, light / dark, shadow root).
 2. Take screenshots of the page in the builder at desktop and mobile (Preview device), in light and dark where possible.
-3. Send them to the user with the list of changes, and wait for approval.
+3. Send them to the user with the list of changes and identify any preview limitations. Continue work already authorized by the user; request approval only for a publication or other action that is not yet authorized.
 4. **Publish only when told.** Then open the live URL at 1280 and 390 in both modes, click through tabs and links, and confirm.
 
 ## Reporting quirks

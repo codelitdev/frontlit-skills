@@ -50,6 +50,7 @@ frontlit/
 | `layout` | array | Blocks, top to bottom: `{ "name": "<block>", "settings": { … } }`. `settings` is optional. |
 
 No other keys are allowed (unknown keys are errors). Block names and settings are in `references/blocks.md`; the full schema with every enum and default is `scripts/schema/page.v1.json`.
+For the page-level SEO fields (`title`, `description`, `socialImage`, `robotsAllowed`), see `references/seo.md`.
 
 ## `site.json`
 

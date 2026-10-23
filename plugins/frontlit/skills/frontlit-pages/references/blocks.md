@@ -4,6 +4,8 @@ A page's `layout` is a list of blocks. `scripts/schema/page.v1.json` is the exac
 
 **The one rule that matters most:** FrontLit renders a block's settings on top of its defaults, and the defaults are FrontLit's own demo copy. A hero with no `title` says "Run your whole business from one front office"; a grid with no `items` shows three demo cards. **Set every text, button and list setting the block shows.** To hide one, set it to `""` (strings) or `[]` (lists). Buttons render only when both caption and action are set. The checker warns (`DEMO_CONTENT`) for each unset content setting.
 
+The editor's **SEO** panel is page-level metadata, outside the block list. For its title, description, search engine visibility and social image, see `seo.md`.
+
 ## Settings every block takes
 
 | Setting | Values | Use |
@@ -17,22 +19,22 @@ Blocks with a title also take `titleLevel` (`h1` | `h2` | `h3`; the hero default
 
 ## hero
 
-The page's opening: who it's for, what they get, one primary action. Its title is the page's H1.
+The page's opening: a product introduction, campaign, story or other subject appropriate to the site. Buttons are optional; blank unused captions and actions. Its title is the page's H1.
 
 | Setting | Notes |
 | --- | --- |
 | `layout` | `normal` (text beside media), `centered`, `card`, `media-below`. Default `normal`. |
 | `preTitle` | Short eyebrow above the title ("New: Git sync"). Optional. |
-| `title` | Outcome, under ~10 words. Highlight one phrase with `*asterisks*`. |
+| `title` | A concise headline suited to the domain and brand. Optional `*asterisks*` highlight a phrase. |
 | `description` | Markdown, 1–2 sentences: how, for whom. |
 | `buttonCaption` + `buttonAction` | Primary CTA (verb + object: "Start free"). Default demo values; always set or blank both. |
 | `secondaryButtonCaption` + `secondaryButtonAction` | Lower-commitment action ("See how it works", "Read the docs"). |
 | `command` | A copyable shell command ("npx create-acme"), great for developer tools. |
 | `smallPrint` | Reassurance under the buttons ("No credit card. Free for 3 users."). |
-| `media` / `youtubeLink` | Product screenshot or video. `mediaRadius` 0–8 rounds it. |
+| `media` / `youtubeLink` | Photo, product screenshot, illustration, cutout or video. Inspect the rendered crop: media containers may use a fixed aspect ratio and cover fit, which can clip square assets or cutouts. `mediaRadius` 0–8 rounds it. |
 | `alignment`, `contentAlignment` | Media side and text alignment; `centered` layout ignores media position. |
 
-Anti-patterns: a title that names the product but not the benefit; three equal buttons; no media in `normal` layout (use `centered` instead).
+Avoid irrelevant demo copy or competing actions; no media in `normal` layout (use `centered` instead).
 
 ## featured
 
@@ -78,7 +80,7 @@ Questions and answers. `layout`: `list` (accordion, default), `cards`, `columns`
 
 ## banner
 
-A call-to-action band: closing CTA or a mid-page nudge. `layout`: `stacked`, `split`, `boxed`. `title`, `description`, primary and secondary buttons, `contentAlignment`. Pair with a contrasting `background`. One near the end of every marketing page.
+A call-to-action band: closing CTA or a mid-page nudge. `layout`: `stacked`, `split`, `boxed`. `title`, `description`, primary and secondary buttons, `contentAlignment`. Pair with a contrasting `background`. Use when a distinct next action helps the visitor; it is optional, especially on browsing or reading pages.
 
 ## email-form
 
@@ -103,7 +105,7 @@ Good for animated diagrams, data tables, tabbed code samples and logo strips wit
 - No external `<script src>` or stylesheets. Prefer the theme's fonts to a font service (a font link works but slows every page).
 - Use theme variables with fallbacks, plus a hardcoded brand accent.
 - Honour `prefers-reduced-motion`.
-- Don't rebuild with an embed what a block already does: blocks follow the theme and stay editable in the builder.
+- Prefer native blocks when they preserve the intended composition. A scoped embed is appropriate for a distinctive layout or interaction the blocks cannot reasonably express, including overlapping imagery, custom linked promotional panels or an asymmetric article index. See `embeds.md` for the decision and maintenance workflow.
 
 ## content-feed
 
