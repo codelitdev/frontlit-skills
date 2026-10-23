@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "frontlit": {
+      "type": "http",
+      "url": "https://api.frontlit.app/mcp"
+    }
+  }
+}

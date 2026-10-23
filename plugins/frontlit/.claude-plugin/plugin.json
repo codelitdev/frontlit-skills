@@ -1,0 +1,11 @@
+{
+  "name": "frontlit",
+  "version": "0.2.0",
+  "description": "Write and port FrontLit docs, design landing pages in Git or the visual builder, and manage website branding, with a bundled FrontLit MCP connection.",
+  "author": {
+    "name": "FrontLit"
+  },
+  "license": "MIT",
+  "icon": ".claude-plugin/icon.png",
+  "privacyPolicyUrl": "https://frontlit.app/p/privacy"
+}

@@ -42,7 +42,7 @@ frontlit/
 | Key | Type | Notes |
 | --- | --- | --- |
 | `$schema` | string | Always `https://frontlit.app/schema/page.v1.json`. Editors use it for completion and validation. |
-| `title` | string | Browser tab and search result title. ~50–60 characters; don't append the site name (FrontLit adds branding where needed). |
+| `title` | string | This page's browser tab and search result title, not the website branding title. ~50–60 characters; don't append the site name (FrontLit adds branding where needed). |
 | `description` | string | Search snippet and link preview. ~120–160 characters. Warning if missing or over 160. |
 | `socialImage` | media | Open Graph image, 1200×630 PNG/JPG. |
 | `robotsAllowed` | boolean | `false` adds noindex. Default `true`. |
@@ -52,6 +52,8 @@ frontlit/
 No other keys are allowed (unknown keys are errors). Block names and settings are in `references/blocks.md`; the full schema with every enum and default is `scripts/schema/page.v1.json`.
 
 ## `site.json`
+
+Website branding (site title, subtitle and logo) is not part of this file. Use FrontLit settings via `get_team_settings` / `update_team_settings`; see `mcp.md`. Do not add a top-level `title`, `website` or `branding` key here.
 
 ```json
 {

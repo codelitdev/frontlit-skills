@@ -1,12 +1,25 @@
 ---
 name: frontlit-pages
 description: >-
-  Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, themes from a product's design system, and custom Embed snippets. Use when the user wants a new or improved marketing page (home, pricing, features, launch, about), wants to change the site header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
+  Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, themes from a product's design system, and custom Embed snippets. Use when the user wants a new or improved marketing page (home, pricing, features, launch, about), wants to change the website name, branding, header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
 ---
 
 # FrontLit Pages
 
 FrontLit can publish a site's landing pages from a folder of JSON files in the team's GitHub repository (GitHub only; GitLab and others aren't supported). Each file is one page built from FrontLit's blocks (hero, grid, pricing, FAQ…); `site.json` beside the folder holds the header, footer, theme and redirects. Every push to the publishing branch is validated and, if everything passes, published as one release. Your job is to write pages that pass on the first try, look designed rather than templated, and convert. Sites that edit pages in FrontLit's visual builder instead of Git use the same blocks and guidance; see `references/builder.md`.
+
+## Choose the setting and source first
+
+| Request | Setting and source |
+| --- | --- |
+| Website name, site title, or branding across the website | FrontLit branding; use `get_team_settings` → `update_team_settings` → `get_team_settings`, even when pages are Git-managed. See `references/mcp.md`. |
+| One page's browser-tab/search title or SEO description | Page JSON `title` / `description` in Git; builder **Edit SEO settings** or MCP `update_page` for builder-owned pages. |
+| The heading visitors read on a page | Hero block `settings.title`; this is separate from SEO and branding. |
+| Shared navigation, footer, theme or redirects | `site.json` for Git-managed pages; follow builder guidance for builder-owned pages. Branding is stored separately. |
+
+Interpret “site title” or “website name” as branding unless the user identifies a particular page or its SEO. Resolve remaining ambiguity from context, then ask only if the target is still unclear. A branding request must not be substituted with a homepage SEO edit. `site.json` has no branding/title field.
+
+Discover relevant FrontLit tools before declaring MCP unavailable; clients may prefix their names. Installing this skill alone does not connect MCP. For an MCP-only task, read `references/mcp.md`; if the needed tools are unavailable, offer the FrontLit connection or the exact dashboard setting. Continue independent Git work without making MCP a prerequisite for file edits. Report which setting changed and whether it is saved live, a draft, or awaiting Git publication.
 
 Read these as needed:
 
@@ -16,13 +29,14 @@ Read these as needed:
 - `references/design.md`: page styles, section variations, page skeletons, hierarchy, rhythm, hero legibility, backgrounds (with `background-presets.json`), logo strips, diagrams and tables. **Read before planning a page**: pick a style first.
 - `references/embeds.md`: how `script` embeds run (inline, shadow root), the rules and a template. **Read before writing a snippet**; test it with `scripts/test-embed.mjs`.
 - `references/theme-from-design-system.md`: map a product's design tokens to `theme` (`scripts/oklch-to-hex.mjs`).
+- `references/mcp.md`: tool routing, website branding, remote connection and missing-tool handling. **Read for branding or MCP work.**
 - `references/builder.md`: working in the visual builder instead of Git: ground rules, workflow, editor quirks, automation. **Read before your first builder edit.**
 - `examples/frontlit/`: a valid site folder (home, pricing, a full launch page, `site.json`). Copy from it.
 
 ## 1. Find the site folder
 
 1. Look for `site.json` or `pages/*.json` files whose `$schema` is `https://frontlit.app/schema/page.v1.json`. The folder holding `site.json`, `pages/` (and `docs/` if docs are synced) is the **site folder**, `frontlit/` by default. It can also be the repository root.
-2. If the FrontLit MCP server is connected, `get_documentation_github` returns the connected repository, branch and site folder; prefer it.
+2. If FrontLit MCP is connected, prefer `get_documentation_github`: inspect `binding.owner`, `repository`, `branch`, `root` and `pagesDirectory`. A docs Git connection does not imply landing pages are Git-managed; a null `pagesDirectory` means pages remain builder-owned.
 3. If neither exists, ask the user. Pages only publish once the repository is connected in FrontLit (**Settings → Integrations → GitHub**, with **Landing pages** ticked). For a site that already has pages in the builder, tell the user to use **Export pages** in that dialog: it opens a pull request with every current page, the header, footer and theme in canonical form, which is a better starting point than writing them from scratch.
 
 ## 2. Write or edit pages

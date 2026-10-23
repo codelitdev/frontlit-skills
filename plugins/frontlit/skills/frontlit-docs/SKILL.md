@@ -10,13 +10,22 @@ FrontLit publishes docs from a folder of plain Markdown files in a GitHub reposi
 Read these as needed:
 
 - `references/format.md`: the exact file, frontmatter, Markdown, link and section rules. **Read before writing any file.**
+- `references/mcp.md`: current tools for source ownership, unsaved-document validation, Git check reports, connection and scopes. Read when using MCP or diagnosing a remote validation failure.
 - `references/porting.md`: the conversion table for other docs frameworks. Read when porting.
 - `references/writing.md`: how to write pages that work for readers, search and AI answers.
+
+## Choose Git or MCP
+
+Use repository files for Git-managed docs and `_sections.json`. Prefer connected FrontLit MCP for source discovery, live publication/check status and server validation; discover the actual tool names/schemas first. Installing a skill alone does not connect MCP.
+
+`get_documentation_github` identifies the configured source; `get_documentation_settings` reports docs ownership. A pages-only Git connection does not make docs Git-managed. `validate_documentation` validates unsaved document content; it does not parse a repository YAML frontmatter block or validate the whole Git manifest. Read `references/mcp.md` for the input shape and diagnostics workflow.
+
+MCP is optional for ordinary repository edits: use the bundled checker and PR validation when it is unavailable. Offer a FrontLit connection only when a requested live operation needs it. Website name/logo changes use `get_team_settings` / `update_team_settings` and the `frontlit-pages` branding guidance; changing a docs frontmatter title does not rename the website.
 
 ## 1. Find the docs folder
 
 1. FrontLit syncs everything from one site folder (`frontlit/` by default, or the repository root); docs live in its `docs/` subfolder, e.g. `frontlit/docs/`, next to `pages/` and `site.json` (those are the frontlit-pages skill's). Look for that folder, or for `_sections.json` containing `"version": 1`; its folder is the docs folder.
-2. If the FrontLit MCP server is connected, `get_documentation_github` returns the connected repository, branch and folder; prefer it.
+2. If FrontLit MCP is connected, prefer `get_documentation_github`: inspect `binding.owner`, `repository`, `branch`, `root`, `directory` and `docsEnabled`. Use the docs folder only when docs sync is enabled; pages can be Git-managed independently.
 3. If neither exists, ask the user which folder FrontLit is connected to. Do not guess, because only that folder is published.
 
 ## 2a. Writing or editing docs
@@ -35,14 +44,14 @@ Read these as needed:
 
 ## 3. Validate before opening the pull request
 
-- If the FrontLit MCP server offers `validate_documentation_markdown`, validate every changed file with it and fix all diagnostics.
-- Otherwise run the checker bundled with this skill (Node 18+). It is `scripts/check.mjs` in the folder that contains this `SKILL.md`; run it from the repository root:
+- If connected FrontLit MCP exposes `validate_documentation`, use its unsaved-document mode for changed document bodies and fix the returned diagnostics; see `references/mcp.md`. This complements the file checker; it does not validate Git YAML frontmatter or the complete candidate manifest.
+- Run the checker bundled with this skill (Node 18+) for file/frontmatter, route and cross-file checks. It is `scripts/check.mjs` in the folder that contains this `SKILL.md`; run it from the repository root:
 
   ```bash
   node <path-to-this-skill>/scripts/check.mjs <docs-folder>
   ```
 
-  It catches the common failures (MDX/HTML, unsupported Markdown, bad frontmatter, invalid slugs, duplicate routes, broken internal links and anchors). It is a pre-check, not the authority: the `FrontLit / docs validation` check on the pull request is final. If it fails, read its annotations and push a fix to the same branch.
+  It catches the common failures (MDX/HTML, unsupported Markdown, bad frontmatter, invalid slugs, duplicate routes, broken internal links and anchors). It is a pre-check, not the authority: the `FrontLit / docs validation` check on the pull request is final. If it fails, read its annotations (and available MCP check reports), fix every reported issue and push to the same branch. Recheck the current PR head after the new remote result completes; a local pass alone does not establish remote success.
 
 ## 4. Pull request
 

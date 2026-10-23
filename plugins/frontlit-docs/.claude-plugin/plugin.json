@@ -1,6 +1,0 @@
-{
-  "name": "frontlit-docs",
-  "version": "0.1.0",
-  "description": "Write FrontLit docs and port existing docs sites (Fumadocs, Docusaurus, Mintlify, Nextra, GitBook, VitePress) to FrontLit.",
-  "author": { "name": "FrontLit" }
-}

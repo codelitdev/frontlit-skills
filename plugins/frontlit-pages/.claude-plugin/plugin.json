@@ -1,8 +1,0 @@
-{
-  "name": "frontlit-pages",
-  "version": "0.1.0",
-  "description": "Write and design FrontLit landing pages: JSON files in your repository (validated before a pull request) or the visual builder, with design, theme and embed guidance.",
-  "author": {
-    "name": "FrontLit"
-  }
-}

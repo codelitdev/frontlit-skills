@@ -4,8 +4,8 @@ Agent skills for FrontLit.
 
 | Skill | What it does |
 | --- | --- |
-| [`frontlit-docs`](plugins/frontlit-docs/skills/frontlit-docs/SKILL.md) | Write FrontLit docs, or port an existing docs site (Fumadocs, Docusaurus, Mintlify, Nextra, GitBook, VitePress) to FrontLit and open a pull request |
-| [`frontlit-pages`](plugins/frontlit-pages/skills/frontlit-pages/SKILL.md) | Write and design FrontLit landing pages: as JSON in the repository (`frontlit/pages/*.json`, `frontlit/site.json`, validated before a pull request) or in the visual builder. Includes design and background recipes, themes from a design system, and Embed snippets with a headless-Chrome test harness |
+| [`frontlit-docs`](plugins/frontlit/skills/frontlit-docs/SKILL.md) | Write FrontLit docs, or port an existing docs site (Fumadocs, Docusaurus, Mintlify, Nextra, GitBook, VitePress) to FrontLit and open a pull request |
+| [`frontlit-pages`](plugins/frontlit/skills/frontlit-pages/SKILL.md) | Write and design FrontLit landing pages: as JSON in the repository (`frontlit/pages/*.json`, `frontlit/site.json`, validated before a pull request) or in the visual builder. Includes website branding through MCP, design and background recipes, themes from a design system, and Embed snippets with a headless-Chrome test harness |
 
 ## Install
 
@@ -15,24 +15,64 @@ Any agent that supports skills (Claude Code, Codex, OpenCode, Gemini CLI, Cursor
 npx skills add codelitdev/frontlit-skills
 ```
 
-This installs both `frontlit-docs` and `frontlit-pages`.
+This installs both `frontlit-docs` and `frontlit-pages` as standalone skills. It does not automatically register or authenticate an MCP server.
 
 Claude Code plugin:
 
 ```
 /plugin marketplace add codelitdev/frontlit-skills
-/plugin install frontlit-docs@frontlit
-/plugin install frontlit-pages@frontlit
+/plugin install frontlit@frontlit
 ```
+
+The `frontlit` plugin contains both skills and bundles the remote FrontLit MCP connection in its root `.mcp.json`. After installing, open `/mcp` to authenticate with FrontLit and select the intended team. If you already added the same endpoint yourself, Claude Code uses your connection and skips the plugin's copy. Installation does not grant account access or publish anything.
+
+If you installed the earlier `frontlit-docs` or `frontlit-pages` plugins, uninstall them and install `frontlit` instead.
+
+Codex plugin:
+
+```bash
+codex plugin marketplace add codelitdev/frontlit-skills
+codex plugin add frontlit@frontlit
+codex mcp login frontlit
+```
+
+Codex installs the same plugin, both skills and the bundled FrontLit MCP connection; `codex mcp login frontlit` authenticates it.
+
+## Optional MCP connection for standalone skills
+
+Repository authoring works without MCP. Connect it when you want live source/status queries, server validation, builder-owned page edits, or website branding changes:
+
+```bash
+# Claude Code; then open /mcp to authenticate
+claude mcp add --transport http frontlit https://api.frontlit.app/mcp
+
+# Codex; then complete OAuth and choose the required scopes
+codex mcp add frontlit --url https://api.frontlit.app/mcp
+codex mcp login frontlit
+```
+
+Other clients can add `https://api.frontlit.app/mcp` as a remote Streamable HTTP server. OAuth binds the connection to the team selected during authorization; tools enforce the granted scopes. No API key or token is bundled.
+
+A standalone `SKILL.md` is portable workflow guidance, not a universal MCP installer. The `frontlit` plugin packages the connection alongside its skills for Claude Code and Codex. Other plugin-capable hosts need their own supported manifest/configuration; ordinary skill installation should not be assumed to load plugin-level `.mcp.json`. Codex also supports MCP dependency declarations in `agents/openai.yaml`; these skills do not declare MCP as a required dependency because their Git workflows work without it.
+
+| Change | Source |
+| --- | --- |
+| Website name, subtitle or logo | FrontLit branding: `get_team_settings` / `update_team_settings`, even when pages are Git-managed |
+| One page's SEO title or description | Page JSON in Git, or builder SEO / MCP `update_page` for builder-owned pages |
+| A page's visible heading | The hero block title |
+| Git-managed header, footer, theme or redirects | `site.json` |
+
+For example, “Set the site title to John's Piping Pizza” updates branding through `update_team_settings({"title": "John's Piping Pizza"})`; changing the homepage SEO title alone does not complete that request. If MCP is unavailable, the skills point to **Website → Branding → Site title** and report that operation as pending.
 
 ## Use
 
-Connect your repository in FrontLit (Settings → Integrations → GitHub) first. Then, in your repository:
+For Git workflows, connect your repository in FrontLit (Settings → Integrations → GitHub) first. Builder and branding workflows use the existing FrontLit website without requiring Git sync. Example requests:
 
 ```
 Use the frontlit-docs skill to port my existing docs to FrontLit and open a pull request.
 Use the frontlit-pages skill to add a pricing page and link it from the header.
 Use the frontlit-pages skill to redesign our homepage in the FrontLit builder, as a draft.
+Use the frontlit-pages skill to set our website name to John's Piping Pizza.
 ```
 
 With Git sync, both skills work on the repository's FrontLit site folder (`frontlit/` by default): docs in `docs/`, pages in `pages/`, header, footer and theme in `site.json`.
@@ -40,6 +80,10 @@ With Git sync, both skills work on the repository's FrontLit site folder (`front
 ## Keeping in sync
 
 - **frontlit-docs:** `references/format.md` and `scripts/check.mjs` mirror FrontLit's Markdown importer and validator. Update them whenever those rules change in the FrontLit repository.
-- **frontlit-pages:** `scripts/schema/page.v1.json` and `site.v1.json` are copies of `packages/page-builder/schema/` in the FrontLit repository (generated by `bun run schema:generate` there). Copy them again whenever block settings change, then, from `plugins/frontlit-pages/skills/frontlit-pages/examples`, run `node ../scripts/check.mjs frontlit/pages --fix` (the examples must stay valid and canonical) and update `references/blocks.md`. The import rules in `scripts/check.mjs` and `references/format.md` (file names, reserved routes, content feeds, link and image checks) mirror `apps/api/src/pages/git-import.ts`.
+- **frontlit-pages:** `scripts/schema/page.v1.json` and `site.v1.json` are copies of `packages/page-builder/schema/` in the FrontLit repository (generated by `bun run schema:generate` there). Copy them again whenever block settings change, then, from `plugins/frontlit/skills/frontlit-pages/examples`, run `node ../scripts/check.mjs frontlit/pages --fix` (the examples must stay valid and canonical) and update `references/blocks.md`. The import rules in `scripts/check.mjs` and `references/format.md` (file names, reserved routes, content feeds, link and image checks) mirror `apps/api/src/pages/git-import.ts`.
 - **frontlit-pages backgrounds:** `references/background-presets.json` is exported from FrontLit's `packages/page-builder/src/builder/controls/pattern-presets.ts` (the builder's Pattern presets). Re-export it when presets change.
 - **frontlit-pages embeds:** `references/embeds.md` and `scripts/test-embed.mjs` mirror FrontLit's `packages/page-builder/src/components/inline-embed.tsx` (`prepareEmbed`, script handling); update them when that file changes.
+- **MCP routing:** `references/mcp.md` in each skill follows FrontLit `apps/api/src/mcp/tools/` and `packages/api-contract/src/schemas/`. Refresh tool names, input examples, ownership fields and scope guidance when those contracts change. Branding uses flat team settings fields; `website.branding.title` describes the product concept, not the MCP argument shape. The deployed tool schema remains authoritative.
+- **Plugin connections:** `plugins/frontlit/.mcp.json` must use the remote endpoint documented in FrontLit `apps/docs/content/docs/developers/mcp.mdx`. Keep them free of credentials and bump the version in `plugins/frontlit/.claude-plugin/plugin.json` when shipping skill/config updates.
+
+Packaging references: [Claude plugin MCP configuration](https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers), [OpenAI skills and MCP](https://developers.openai.com/plugins/build/skills), and [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins).
