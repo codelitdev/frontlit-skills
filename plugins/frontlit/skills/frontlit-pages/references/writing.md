@@ -212,4 +212,4 @@ These are optional software-marketing examples. Use only the recipes that fit th
 - No demo copy, placeholder text, lorem ipsum or invented facts. Placeholders the user must fill are listed in the PR.
 - One H1; title and description set and within length; social image set for pages that get shared.
 - Every button and header/footer link goes somewhere real; anchors have matching `cssId`s.
-- You looked at the **FrontLit / pages preview** on desktop and mobile, in light and dark.
+- You looked at every changed page in the local preview (`npx @frontlit/preview@alpha frontlit`) and then the **FrontLit / pages preview**, on desktop and mobile, in light and dark.

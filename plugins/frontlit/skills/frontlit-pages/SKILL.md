@@ -66,7 +66,22 @@ It validates every page and `site.json` against the bundled `page.v1` / `site.v1
 - **Fix every error and actionable warning in files you changed.** Verify suspected false positives against the rendered page and document them rather than distorting the design to satisfy a checker limitation. Warnings in files you didn't touch: leave them, and list them in the pull request.
 - `DEMO_CONTENT` means a visible setting is unset and the block's demo copy would show. Set it, or `""` / `[]` to hide it.
 
-Schema checks establish import validity, not visual quality. This skill currently bundles an embed harness, not a full-site local renderer; do not invent a preview CLI command. If the project supplies a local preview that uses the deployed page-builder version, fonts, theme, site context and data-slot components, use it for rapid iteration. Otherwise use the embed harness for isolated sections and the FrontLit PR preview for whole-page review. On the pull request, the **FrontLit / pages preview** check links to a private preview of the result: open it, look at the page on desktop and mobile, light and dark, and push fixes to the same branch. If you can't open a pull request (no remote, no access), say in your summary that the page hasn't been seen rendered. After merge, problems (file, JSON pointer, message) show in FrontLit's repository dialog; nothing changes on the live site until they're fixed.
+Schema checks establish import validity, not visual quality. Look at the pages while you edit with FrontLit's local preview (Node 20.19+ or 22.12+; no FrontLit login or backend), run from the repository root:
+
+```bash
+npx @frontlit/preview@alpha frontlit
+```
+
+It serves every `pages/*.json` at http://127.0.0.1:4310 (`--port` to change) with the real page-builder renderer, fonts, theme and `site.json` chrome, and reloads the browser on every save; invalid files show diagnostics until the next edit fixes them. Use the toolbar to switch pages and light/dark mode, and browser device emulation for 390 px. Branding (site title, subtitle, logo) isn't in the Git site format, so the header shows a placeholder until you add a gitignored `preview.context.json` in the site folder; it can also hold `feeds` fixtures for content-feed routes:
+
+```json
+{
+  "branding": { "title": "Acme", "subtitle": "Tagline", "logo": { "url": "assets/logo.svg", "alt": "Acme" } },
+  "feeds": { "/blog": [{ "title": "First post", "href": "/", "description": "Fixture" }] }
+}
+```
+
+If the FrontLit MCP server is connected, get the real branding from it instead of asking or guessing: call `get_team_settings({})` (read-only) and copy `title` → `branding.title`, `subtitle` → `branding.subtitle` and `logo.url` → `branding.logo.url` (an `https://` URL the preview loads as is; use the title as `alt`). Skip fields that are null. Without MCP, ask the user for the site name or leave the placeholder; the pages still render. Never commit the file. The local preview renders on the client and doesn't implement article/doc detail routes, redirects, search, chat or production image optimization, and forms only show a local success state. Use it for rapid iteration, `scripts/test-embed.mjs` for isolated embeds, and the FrontLit PR preview as the final whole-site check. On the pull request, the **FrontLit / pages preview** check links to a private preview of the result: open it, look at the page on desktop and mobile, light and dark, and push fixes to the same branch. If you can't open a pull request (no remote, no access), say in your summary that the page hasn't been seen rendered. After merge, problems (file, JSON pointer, message) show in FrontLit's repository dialog; nothing changes on the live site until they're fixed.
 
 ## 4. Pull request
 

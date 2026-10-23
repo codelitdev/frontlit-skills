@@ -20,6 +20,7 @@ Branding saves directly to team settings, outside page drafts and Git releases. 
 | Goal | Tools and constraints |
 | --- | --- |
 | Discover publishing ownership | `get_documentation_github({})`; `binding.root` is the site folder and `binding.pagesDirectory` identifies Git-managed landing pages. `binding.docsEnabled` is independent. |
+| Branding for the local preview | `get_team_settings({})` only (read-only); copy `title`, `subtitle` and `logo.url` into the gitignored `preview.context.json` (see `SKILL.md` step 3). Never call `update_team_settings` for this. |
 | Read a builder-owned page | `list_pages` to find its ID, then `get_page({"pageId": "…"})`. Read the existing full layout before changing it. |
 | Change a builder-owned page's SEO | `update_page` accepts `title`, `description` and `robotsAllowed` and saves the page draft. It does not accept `socialImage`; use the builder for that field. `name` is the internal page name, not website branding. See `seo.md`. |
 | Change builder-owned page blocks | `update_page` with the page ID and revised layout. Rich text uses TipTap JSON here; Git page JSON uses Markdown. |
