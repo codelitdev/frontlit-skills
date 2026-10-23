@@ -36,7 +36,7 @@ This follows FrontLit's `InlineEmbed` (`packages/page-builder/src/components/inl
    - no `<script src>`, no `<link rel="stylesheet">`, no `@import`, no trackers: inline what you need
    - **prefer the theme's fonts to a font service.** A Google Fonts (or similar) link works, because FrontLit hoists it to the page, but it adds a request and a font download to every visit and costs PageSpeed. If the site needs another face, set it in the theme so every block uses it.
 
-   For text, `font: inherit` on the wrapper picks up the theme's text font. For code, name a face the theme already uses, with fallbacks, e.g. `font-family: "Spline Sans Mono", ui-monospace, monospace`. FrontLit self-hosts its theme fonts with page-level `@font-face` rules, and page-level faces work inside the shadow root.
+   `font: inherit` picks up the host's inherited font, which may differ from the theme style used by native headings or body primitives. Inspect a native element's computed `font-family` and the loaded `@font-face` declarations when matching a particular style. Theme keys (`font-hanken-grotesk`), font display names (`Hanken Grotesk`) and CSS face names are different contracts. The current compiled stylesheet registers faces such as `fl-hanken-grotesk` and `fl-spline-sans-mono`; verify these against the renderer version instead of assuming a human-readable font name loads the face. For example, after verifying that the page loads it: `font-family: "fl-hanken-grotesk", ui-sans-serif, sans-serif`. Do not introduce a second font download to fix a naming mismatch.
 4. **Follow the page's colours with fallbacks.** Map page variables to your own on the wrapper, with a fallback for each, so the snippet still renders outside FrontLit:
 
    ```css
@@ -67,6 +67,7 @@ This follows FrontLit's `InlineEmbed` (`packages/page-builder/src/components/inl
    - `aria-hidden="true"` on decorative SVG.
 10. **No `position: fixed`, and no `100vh` heights.** The snippet lives inside a section.
 11. **Size is not a problem.** Snippets of 70k+ characters paste and render fine; there's no character limit in the builder. Keep the source file in the repository or project folder so it can be diffed and re-pasted.
+12. **Keep source and JSON synchronized.** When readable HTML is stored separately, treat it as the editing source and copy it into the page's script embed with `node <skill>/scripts/sync-embed.mjs <page.json> <snippet.html>`. With multiple script embeds, select the zero-based layout position with `--index N`; `--check` verifies equality without writing. The source file alone is not imported by FrontLit. Media URLs inside raw HTML are not structured media fields: do not assume repository paths will be uploaded or rewritten; verify their served URLs in the page.
 
 ## Template
 
@@ -118,7 +119,7 @@ The search skips roots already marked ready, so two copies of the same snippet o
 
 ## Test before pasting
 
-The editor can't show interactivity (overlay), and there's no shareable draft preview yet (FrontLit #103). Test every snippet locally first:
+The builder overlay can prevent interacting with a snippet. Use this harness for isolated testing, then review it inside the actual page:
 
 ```bash
 node <path-to-this-skill>/scripts/test-embed.mjs snippet.html --prefix acme-
@@ -129,8 +130,10 @@ The script, `scripts/test-embed.mjs`:
 - **Renders** with headless Chrome both normally and the way FrontLit does: its rewrites and a declarative shadow root.
 - **Screenshots** 1280 px and 390 px in light and dark.
 
-Open every screenshot and check: headings legible, contrast fine in dark, nothing cut off or overflowing at 390 px, and the default tab or state correct. Then paste the snippet. After publishing, click through the interactive parts on the live page once.
+Open every screenshot and check: headings legible, contrast fine in dark, nothing cut off or overflowing at 390 px, and the default tab or state correct. Then synchronize or paste the snippet and review the whole page in the available FrontLit preview. The harness approximates the embed container; its stub fonts, variables, surrounding layout and data are not evidence of whole-site parity. Use `--vars <css-file>` for supplied light/dark theme variables when useful. A successful render does not prove that the actual font loaded; check computed styles and the page's font declarations. Wait for fonts and image decoding before screenshots. If an oversized decorative image is clipped, check that scroll/focus operations do not shift the hidden container and hide text; `overflow: clip` can suit non-scrollable decoration. After an authorized publish, check interactive behavior on the live page.
 
-## When not to use an embed
+## Choosing native blocks or an embed
 
-If a block can do it (hero, featured, grid, FAQ, pricing, banner), use the block: it follows the theme and stays editable by people who don't read HTML. Embeds are for what blocks can't express.
+Use native blocks when their layouts preserve the intended design and interactions; they remain easier to edit visually. Use a scoped embed when the required composition would otherwise be lost, such as overlapping food cutouts and display lettering, a custom promotional panel, or an asymmetric linked article layout. Keep the rest native where practical. A whole-page embed is not the default, and the existence of a block called “hero” is not sufficient reason to flatten a distinctive opening into a generic layout.
+
+The page checker counts native block headings, not headings inside raw embed HTML. If a custom opening owns the H1, verify that the rendered page has exactly one and record the resulting `HEADING_LEVEL` warning as a checked limitation; do not add a second H1 to silence it.

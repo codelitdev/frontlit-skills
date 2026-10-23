@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Pre-check FrontLit page files: node check.mjs [site-folder | pages-folder] [--fix]
+// Pre-check FrontLit page files: node check.mjs [site-folder | pages-folder] [--fix] [--changed]
 // Validates <site folder>/pages/*.json and <site folder>/site.json against the
 // bundled page.v1 / site.v1 JSON Schemas plus FrontLit's import rules. Run it
 // from the repository root. --fix also rewrites valid pages and site.json in
@@ -9,6 +9,7 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, isAbsolute, join, normalize, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PAGE_SCHEMA = JSON.parse(readFileSync(join(here, "schema/page.v1.json"), "utf8"));
@@ -28,6 +29,21 @@ const LIMITS = { files: 200, bytes: 2 * 1024 * 1024, assetBytes: 10 * 1024 * 102
 const args = process.argv.slice(2);
 const fix = args.includes("--fix");
 const root = process.cwd();
+// Reporting filter only: never skip validation or hide blocking errors.
+let changedFiles = null;
+if (args.includes("--changed")) {
+  try {
+    const gitRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+    const names = [
+      execFileSync("git", ["diff", "--name-only", "-z", "HEAD"], { cwd: gitRoot, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }),
+      execFileSync("git", ["ls-files", "--others", "--exclude-standard", "-z"], { cwd: gitRoot, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }),
+    ].flatMap(s => s.split("\0").filter(Boolean));
+    changedFiles = new Set(names.map(name => normalize(join(gitRoot, name))));
+  } catch {
+    console.error("--changed requires a Git repository with a HEAD commit. Run without --changed to show all warnings.");
+    process.exit(2);
+  }
+}
 let folder = args.find((a) => !a.startsWith("--")) ?? findPagesFolder(root);
 // Accept the site folder too: <site>/pages holds the pages.
 if (folder && existsSync(join(folder, "pages")) && statSync(join(folder, "pages")).isDirectory())
@@ -40,9 +56,14 @@ const siteFile = join(dirname(folder), "site.json");
 
 const errors = [];
 const warnings = [];
+const otherWarnings = [];
 const at = (file, pointer) => `${relative(root, file)}${pointer ? `#${pointer}` : ""}`;
 const error = (file, pointer, code, message) => errors.push(`${at(file, pointer)}  ${code}  ${message}`);
-const warn = (file, pointer, code, message) => warnings.push(`${at(file, pointer)}  ${code}  ${message}`);
+const warn = (file, pointer, code, message) => {
+  const line = `${at(file, pointer)}  ${code}  ${message}`;
+  warnings.push(line);
+  if (changedFiles && !changedFiles.has(normalize(isAbsolute(file) ? file : join(root, file)))) otherWarnings.push({ line, code });
+};
 
 function findPagesFolder(start) {
   if (existsSync(join(start, "frontlit/pages"))) return join(start, "frontlit/pages");
@@ -446,7 +467,14 @@ if (fix && !errors.length) {
   }
   console.log(`Formatted ${changed} file(s).`);
 }
-if (warnings.length) console.log(`Warnings:\n${warnings.join("\n")}\n`);
+const otherLines = new Set(otherWarnings.map(w => w.line));
+const detailedWarnings = warnings.filter(w => !otherLines.has(w));
+if (detailedWarnings.length) console.log(`Warnings${changedFiles ? " in changed files" : ""}:\n${detailedWarnings.join("\n")}\n`);
+if (otherWarnings.length) {
+  const counts = new Map();
+  for (const { code } of otherWarnings) counts.set(code, (counts.get(code) ?? 0) + 1);
+  console.log(`Other files: ${otherWarnings.length} warning(s) (${[...counts].map(([code, n]) => `${code}: ${n}`).join(", ")}). Run without --changed for details.\n`);
+}
 if (errors.length) {
   console.log(`Errors:\n${errors.join("\n")}\n`);
   console.log(`${errors.length} error(s), ${warnings.length} warning(s) in ${pages.length} page(s). Nothing will go live until the errors are fixed.`);

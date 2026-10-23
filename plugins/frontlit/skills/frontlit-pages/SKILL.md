@@ -1,19 +1,19 @@
 ---
 name: frontlit-pages
 description: >-
-  Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, themes from a product's design system, and custom Embed snippets. Use when the user wants a new or improved marketing page (home, pricing, features, launch, about), wants to change the website name, branding, header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
+  Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, site-wide theme creation, and custom Embed snippets. Use when the user wants a new or improved website page across business domains (home, pricing, features, launch, about), wants to change the website name, branding, header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
 ---
 
 # FrontLit Pages
 
-FrontLit can publish a site's landing pages from a folder of JSON files in the team's GitHub repository (GitHub only; GitLab and others aren't supported). Each file is one page built from FrontLit's blocks (hero, grid, pricing, FAQ…); `site.json` beside the folder holds the header, footer, theme and redirects. Every push to the publishing branch is validated and, if everything passes, published as one release. Your job is to write pages that pass on the first try, look designed rather than templated, and convert. Sites that edit pages in FrontLit's visual builder instead of Git use the same blocks and guidance; see `references/builder.md`.
+FrontLit can publish a site's landing pages from a folder of JSON files in the team's GitHub repository (GitHub only; GitLab and others aren't supported). Each file is one page built from FrontLit's blocks (hero, grid, pricing, FAQ…); `site.json` beside the folder holds the header, footer, theme and redirects. Every push to the publishing branch is validated and, if everything passes, published as one release. Your job is to write pages that pass on the first try, look designed rather than templated, and serve the website visitor’s actual purpose. Sites that edit pages in FrontLit's visual builder instead of Git use the same blocks and guidance; see `references/builder.md`.
 
 ## Choose the setting and source first
 
 | Request | Setting and source |
 | --- | --- |
 | Website name, site title, or branding across the website | FrontLit branding; use `get_team_settings` → `update_team_settings` → `get_team_settings`, even when pages are Git-managed. See `references/mcp.md`. |
-| One page's browser-tab/search title or SEO description | Page JSON `title` / `description` in Git; builder **Edit SEO settings** or MCP `update_page` for builder-owned pages. |
+| One page's search or social metadata | Page JSON SEO fields in Git; builder **Edit SEO settings** or supported MCP `update_page` fields for builder-owned pages. See `references/seo.md`. |
 | The heading visitors read on a page | Hero block `settings.title`; this is separate from SEO and branding. |
 | Shared navigation, footer, theme or redirects | `site.json` for Git-managed pages; follow builder guidance for builder-owned pages. Branding is stored separately. |
 
@@ -25,10 +25,11 @@ Read these as needed:
 
 - `references/format.md`: files, page and `site.json` keys, Markdown, media, links, validation codes and canonical form. **Read before writing any file.**
 - `references/blocks.md`: every block, its settings and what it's good for. **Read before choosing blocks.**
-- `references/writing.md`: page structure, headings, SEO, copy and section recipes.
+- `references/writing.md`: page structure, headings, copy and section recipes.
+- `references/seo.md`: page-level title, description, search visibility and social card image; builder, Git and MCP routes. **Read before creating a page or editing page SEO.**
 - `references/design.md`: page styles, section variations, page skeletons, hierarchy, rhythm, hero legibility, backgrounds (with `background-presets.json`), logo strips, diagrams and tables. **Read before planning a page**: pick a style first.
 - `references/embeds.md`: how `script` embeds run (inline, shadow root), the rules and a template. **Read before writing a snippet**; test it with `scripts/test-embed.mjs`.
-- `references/theme-from-design-system.md`: map a product's design tokens to `theme` (`scripts/oklch-to-hex.mjs`).
+- `references/theme.md`: create a coherent, functional site-wide theme in the page builder or `site.json`. **Read before designing or changing a theme; for theme JSON, also read `scripts/schema/site.v1.json` → `properties.theme` before editing.**
 - `references/mcp.md`: tool routing, website branding, remote connection and missing-tool handling. **Read for branding or MCP work.**
 - `references/builder.md`: working in the visual builder instead of Git: ground rules, workflow, editor quirks, automation. **Read before your first builder edit.**
 - `examples/frontlit/`: a valid site folder (home, pricing, a full launch page, `site.json`). Copy from it.
@@ -41,12 +42,14 @@ Read these as needed:
 
 ## 2. Write or edit pages
 
-1. **Read what's there first:** every file in `pages/`, and `site.json`. Match the existing voice, block choices, section rhythm and anchor ids (`cssId`). The folder owns *every* page on the site: a page whose file you delete goes offline, including `blog.json`, `docs.json`, `changelog.json` and `help.json`.
-2. **Plan the page** before writing JSON: the visitor, the one action you want, and a section list (see `references/writing.md`). Pick blocks from `references/blocks.md`.
+FrontLit's ICP is SaaS founders; the websites they create can serve any domain. Establish the site's business, visitor intent and visual references before choosing a layout. Use the existing brand and user-supplied competitors as evidence; when the direction is unclear, ask for one or two references while continuing source/content discovery. Domain alone does not determine the style: a restaurant, food publication and cooking course need different treatments. See `references/design.md` for direction and `references/writing.md` for content structure.
+
+1. **Read what's there first:** every file in `pages/`, and `site.json`. Preserve useful content and anchor ids (`cssId`); match the existing visual direction unless the user asks to change it. The folder owns *every* page on the site: a page whose file you delete goes offline, including `blog.json`, `docs.json`, `changelog.json` and `help.json`.
+2. **Plan the page** before writing JSON: the domain, visitor purpose, visual direction, available content and section list (see `references/writing.md`). Choose blocks after the composition; use a scoped embed when a distinctive layout cannot reasonably be expressed by native blocks (see `references/embeds.md`).
 3. **Write the file** following `references/format.md`:
    - Start with `"$schema": "https://frontlit.app/schema/page.v1.json"`, then `title`, `description`, `layout`.
    - **Set every content setting a block shows** (titles, descriptions, buttons, items, tiers). Unset settings fall back to FrontLit's demo copy ("Run your whole business from one front office"). Use `""` or `[]` to hide something.
-   - One H1 per page: the hero. Everything else uses the default H2.
+   - One H1 per page, normally the hero. A custom composition can own the H1; do not add a redundant hero merely to satisfy the checker. Verify the rendered heading hierarchy when embeds contain headings.
    - Never put a header or footer block in a page; edit `site.json` instead.
 4. Header and footer links must point at pages that exist (or the release fails). Adding a page the visitor should find? Add it to `site.json` too.
 
@@ -58,12 +61,12 @@ Run the checker bundled with this skill (Node 18+, no dependencies). It is `scri
 node <path-to-this-skill>/scripts/check.mjs frontlit --fix
 ```
 
-It validates every page and `site.json` against the bundled `page.v1` / `site.v1` schemas and FrontLit's import rules (file names, reserved routes, content feeds, header/footer links, repository images), and warns about demo content, unknown icons, placeholders, heading levels, SEO fields and links. With `--fix`, and only when there are no errors, it then rewrites pages and `site.json` in canonical form (key order, settings equal to a block default dropped, 2-space indent, trailing newline: the form FrontLit writes). One run does both; repeat it until it reports no errors, then commit.
+It validates every page and `site.json` against the bundled `page.v1` / `site.v1` schemas and FrontLit's import rules (file names, reserved routes, content feeds, header/footer links, repository images), and warns about demo content, unknown icons, placeholders, heading levels, SEO fields and links. With `--fix`, and only when there are no errors, it then rewrites pages and `site.json` in canonical form (key order, settings equal to a block default dropped, 2-space indent, trailing newline: the form FrontLit writes). One run does both; fix the reported errors, rerun after changes, then commit. For existing sites, add `--changed` to expand warnings only for working-tree changes relative to HEAD, including staged and untracked files; the whole site is still validated and errors are always reported.
 
-- **Fix every error, and every warning in files you changed** unless the user decided otherwise. Warnings in files you didn't touch: leave them, and list them in the pull request.
+- **Fix every error and actionable warning in files you changed.** Verify suspected false positives against the rendered page and document them rather than distorting the design to satisfy a checker limitation. Warnings in files you didn't touch: leave them, and list them in the pull request.
 - `DEMO_CONTENT` means a visible setting is unset and the block's demo copy would show. Set it, or `""` / `[]` to hide it.
 
-It is a pre-check, not the authority, and there's no local preview. On the pull request, the **FrontLit / pages preview** check links to a private preview of the result: open it, look at the page on desktop and mobile, light and dark, and push fixes to the same branch. If you can't open a pull request (no remote, no access), say in your summary that the page hasn't been seen rendered. After merge, problems (file, JSON pointer, message) show in FrontLit's repository dialog; nothing changes on the live site until they're fixed.
+Schema checks establish import validity, not visual quality. This skill currently bundles an embed harness, not a full-site local renderer; do not invent a preview CLI command. If the project supplies a local preview that uses the deployed page-builder version, fonts, theme, site context and data-slot components, use it for rapid iteration. Otherwise use the embed harness for isolated sections and the FrontLit PR preview for whole-page review. On the pull request, the **FrontLit / pages preview** check links to a private preview of the result: open it, look at the page on desktop and mobile, light and dark, and push fixes to the same branch. If you can't open a pull request (no remote, no access), say in your summary that the page hasn't been seen rendered. After merge, problems (file, JSON pointer, message) show in FrontLit's repository dialog; nothing changes on the live site until they're fixed.
 
 ## 4. Pull request
 
@@ -81,4 +84,4 @@ If the repository isn't connected for pages, work in the visual builder and foll
 
 - Never publish or merge yourself, and never edit pages in the FrontLit builder while the repository owns them: builder edits become pull requests.
 - Don't invent facts: prices, customer names, logos, metrics, testimonials, integrations. Use what the repository, existing pages or user give you. When a section can't be written without them, either drop the section or write `[TODO: what's needed]` and set the page `"published": false` (placeholders go live on merge otherwise); list every TODO in the pull request. Short, true copy beats long, padded copy.
-- Change `theme` in `site.json` only when asked: it restyles every page.
+- A theme change restyles every page. A request for a site-wide redesign authorizes theme work within that scope; a narrow section edit does not. State the site-wide effect and inspect representative pages.

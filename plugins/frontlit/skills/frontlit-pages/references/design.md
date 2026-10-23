@@ -1,29 +1,39 @@
 # Designing pages that look high-end
 
-Polish comes from restraint and rhythm, not decoration: one clear focal point per section, consistent spacing, real content and one accent colour. Use this with the page structure and copy rules (`writing.md` in frontlit-pages, or the checklist in this skill's `SKILL.md`).
+Design the composition for the site’s domain and references: typography, imagery, density, color and navigation should work together. Decoration alone will not repair an inappropriate page structure. Use this with the page structure and copy rules (`writing.md` in frontlit-pages, or the checklist in this skill's `SKILL.md`).
 
-## Start from the product's own design system
+## Establish the direction before blocks
 
-Match the product's real tokens (colours, fonts, radius) in the site theme before touching any section (`theme-from-design-system.md`). Never invent ad-hoc colours per section; every colour on the page should trace back to a token, or to the single brand accent.
+Use the website's own visitors and business as the brief. FrontLit's SaaS-founder ICP does not imply a SaaS visual style for every site. Inspect user-supplied references before choosing a composition; when references are accessible, view their rendered desktop and mobile pages. Extract characteristics such as type weight, food/product image scale, density, navigation and color relationships, rather than copying their branding or fabricating their offers.
+
+When the intended direction is unclear, ask for one or two reference sites early. Continue inspecting content and assets while awaiting the answer; state an assumption if proceeding without one. For example, food-related content alone does not establish whether the site is a restaurant, publication or course.
+
+For example, a restaurant campaign can use oversized display type, strong color fields, cutout food imagery and linked promotional panels. A food publication might instead use a lead story, varied article layouts and restrained reading typography. These are choices based on the brief, not fixed rules for an industry. Commerce, portfolios, services and other domains deserve the same reasoning.
+
+## Start with the site theme
+
+Review the existing site theme before designing sections. If the user asks for a new theme, use `theme.md` to create one that fits the product, audience and content. Keep section colors consistent with that palette; use per-section color only when it strengthens the page hierarchy.
 
 ## Pick a page style
 
-Choose one style per site, from the product's design system and audience, and apply it everywhere: hero, bands, cards, embeds. Each style below is a starting point that FrontLit's blocks and theme can express; adjust colours to the product's tokens.
+Choose one style per site based on its audience and content, and apply it everywhere: hero, bands, cards, embeds. Each style below is a starting point that FrontLit's blocks and theme can express; adjust it to the site's brand and visual direction.
 
 | Style | Fits | Theme | Hero | Sections | Backgrounds |
 | --- | --- | --- | --- | --- | --- |
 | **Clean product** | Most B2B SaaS | Neutral greys, one saturated accent, `rounded-lg`/`rounded-xl`, `highlight: "color"` | `normal` with a product screenshot, `mediaRadius` 3–4 | `featured` grid, 2 zig-zag `content`, `pricing` grid, `faq` list, `banner` boxed | Hero: **Spotlight** or **Soft mesh** (light); one **Dots** band for proof; plain elsewhere |
 | **Developer tool** | APIs, CLIs, infra | Dark-friendly neutrals, mono accent font for code, `rounded-md`, `highlight: "marker"` | `centered` with `command` and a docs link | `code-snippet`, `featured` numbered (steps), `grid` 3 columns with icons, `faq` columns | Hero: **Grid fade** or **Circuit** masked to the edges; **Film grain + glows** on the closing band |
 | **Bold launch** | New product, Product Hunt, waitlist | Vivid accent plus a second hue, large display type, `rounded-2xl`, `highlight: "marker"` | `centered` or `card`, big `preTitle`, short punchy title | `marquee` proof strip, `featured` compact, `content` overlay, `email-form` split, `banner` split | Hero: **Aurora** or **Mesh blobs**; **Holographic band** behind one feature; **Eclipse arc** into the CTA |
-| **Editorial** | Founder-led, content, agencies | Warm paper background, serif or high-contrast display face, `rounded-sm`, few colours | `centered`, long-form title, no media | `rich-text` narrative at `max-w-3xl`, `content` stacked with large images, `faq` list | Mostly plain; **Ruled lines** or **Fine dots** at low contrast on one band |
+| **Editorial** | Publications, journals, content-led sites | Warm paper background, serif or high-contrast display face, `rounded-sm`, few colours | `centered` or story-led opening, expressive title and relevant imagery | `rich-text` narrative at `max-w-3xl`, `content` stacked with large images, `faq` list | Mostly plain; **Ruled lines** or **Fine dots** at low contrast on one band |
+| **Restaurant / food brand** | Restaurants, takeaway, food campaigns | Brand-led display type, appetizing photography, a deliberate palette | Large food image or cutout with a short promotion | Real menu/category links, specials or food stories, supplied ordering/contact details | Strong color fields; a brand pattern where useful; scoped embed for overlapping food/campaign artwork |
+| **Commerce / portfolio** | Product catalogs, makers, studios | Typography and surfaces that support the products or work | Featured product or selected project | Browsable categories or work, detailed views, relevant purchase/contact links | Let the imagery lead; density and color follow the brand |
 | **Friendly SMB** | Local business, consumer, education | Soft tinted surfaces, rounded everything (`rounded-2xl`/`rounded-full` buttons) | `normal` with a real photo, smallPrint reassurance | `grid` 3 cards with photos, `featured` list, `faq` cards, `support-form` or `email-form` | Tinted `color` bands alternating with plain; **Waves** or **Scales** once |
 | **Enterprise / trust** | Security, finance, large customers | Deep navy or charcoal accent, restrained type, `rounded-md` | `media-below` with a wide product shot | Logo strip embed, `grid` 3 columns, `content` side, `pricing` highlight, `faq` columns, `banner` stacked | Plain bands with one subtle **Graph paper** or **Horizon fade**; no motion |
 
 Rules that hold for every style:
 
-- **One accent** carries buttons, highlights and the hero glow; a second hue only in the Bold launch style.
-- **One signature background** (the hero's) plus at most one textured band and a contrasting closing band.
-- **Same radius, border weight and icon set** in blocks, cards and embeds.
+- **Use a deliberate palette.** One accent is a useful starting point; multiple brand colors are appropriate when references and hierarchy justify them. Do not force glows, gradients or muted surfaces onto every domain.
+- **Give backgrounds a role.** Choose color fields, photography, patterns or plain surfaces for the composition. Avoid a different arbitrary effect on every section; a closing band is optional.
+- **Keep related elements consistent.** Rounded cards and icons are optional; an editorial list or food campaign can use open layouts and sharp edges.
 - Pick the style **before** writing sections, and state it in your summary or pull request ("Style: developer tool, accent #7c5cc4").
 
 ## Section variations
@@ -43,7 +53,7 @@ Every block has layouts; vary them down the page so it doesn't read as a templat
 
 ## Page skeletons
 
-Proven orders; replace sections you can't fill with real content.
+Optional starting points; choose a structure for this site rather than following an order by default. Restaurant, publication, commerce and portfolio structures are described in `writing.md`. Omit irrelevant sections and repeated sales prompts.
 
 - **Product homepage:** hero (`normal`) → proof strip (`marquee`, `py-8`) → benefits (`featured` grid) → 2–3 deep features (`content` zig-zag) → use cases (`grid` 3) → pricing teaser (`pricing` or a `banner` to `/pricing`) → `faq` → closing `banner` (boxed, contrasting background).
 - **Developer tool:** hero (`centered`, `command`) → `code-snippet` or code embed → steps (`featured` numbered) → capabilities (`grid` 3 with icons) → diagram embed → `faq` columns → `banner`.
@@ -53,19 +63,19 @@ Proven orders; replace sections you can't fill with real content.
 
 ## Hierarchy
 
-- **One H1 (the hero title) and one focal point per section.** Each section answers one question; its title is the answer in under ~10 words.
-- **Type ladder:** H1 ≫ H2 > card titles > body. Leave the theme's sizes alone unless the hero needs to be bigger. On mobile, keep H1 ≤ 40 px (2–3 lines at 390 px) and body ≥ 16 px.
+- **One meaningful H1 (normally the hero title) and one focal point per section.** Each section answers one question; its title is the answer in under ~10 words.
+- **Type ladder:** H1 ≫ H2 > card titles > body. Leave the theme's sizes alone unless the hero needs to be bigger. At 390 px, check the actual line breaks and first-screen balance; around 32–40 px is a useful starting point for ordinary H1s, while a short display campaign may justify larger type. Keep body text comfortably readable (usually at least 16 px).
 - **Eyebrow + title + one-line lead** is the standard section header. Eyebrows are short, sentence case or small caps, in the accent or muted colour.
 - **Highlight one phrase per title at most** (`*asterisks*`), and not on every section.
 - **Measure:** prose and leads at 60–75 characters per line. Use a narrow `maxWidth` (`max-w-3xl`) for text-heavy sections, and the page width for grids and tables.
 
 ## Rhythm and layout
 
-- **A sequence that breathes:** hero (big, `py-24`+), proof strip (tight, `py-8`/`py-10`), 2–4 content sections (theme default), one contrasting band, FAQ (narrow), closing CTA band.
+- **Vary density with the content:** give an opening composition room, keep navigation or topic strips compact, and balance dense collections with quieter sections. Product proof, FAQs and a closing CTA are choices for an appropriate brief, not required spacing devices.
 - **Alternate density:** a dense grid, then an airy content block, then a table. Don't stack three card grids in a row.
 - **Zig-zag** consecutive `content` blocks (media left, then right).
 - **Fill rows:** card counts that fill rows (3 or 6 in three columns; 2 or 4 in two). Keep card copy similar in length so cards line up.
-- **Backgrounds:** one tinted or textured band in the middle and a contrasting closing band are enough. A different background on every section reads as noise.
+- **Backgrounds:** reuse the chosen palette and visual language to establish rhythm. Color fields can carry a restaurant campaign; plain surfaces may suit a publication. Avoid unrelated effects used merely to fill space.
 - **Consistent corner radius, border weight and icon style** across blocks and embeds (use the theme radius in embeds too).
 
 ## Hero legibility (non-negotiable)
@@ -152,11 +162,11 @@ Purposeful motion is welcome: a diagram that shows the flow, a slowly drifting g
 
 ## Final visual QA
 
-Screenshot every page at 1280 and 390 px in light and dark. Check:
+Review changed pages at desktop and mobile sizes (1280 and 390 px are useful targets), in light and dark where supported. For a site-wide theme change, also sample representative existing content, navigation and forms. Check the actual viewport width: a resized desktop window can have a minimum width; use device emulation when needed. Check:
 - Is the headline legible in every combination?
 - Is anything clipped or overflowing horizontally?
 - Is spacing between sections consistent?
-- Does every colour come from the theme or the one accent (no stray gold or amber, for example, when the brand is violet)?
+- Does every color fit the chosen theme palette, including backgrounds, embeds and dark mode?
 - Is there any demo copy or placeholder left?
 - Do images have alt text?
 - Do header and footer links work?
