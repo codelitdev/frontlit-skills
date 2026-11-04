@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Pre-check a FrontLit docs folder: node check.mjs [docs-folder]
+// Pre-check a FrontLit docs folder: node check.mjs [docs-folder] [--api-mount=api-reference]
+// --api-mount: URL path of the generated API reference; links under /docs/<mount>/ are not checked.
 // Mirrors the common FrontLit validation failures. FrontLit's own pull request
 // check is authoritative; this catches problems before pushing. No dependencies.
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -24,13 +25,33 @@ function findDocsFolder(root) {
   return null;
 }
 
-const folder = process.argv[2] ?? findDocsFolder(process.cwd());
+const args = process.argv.slice(2);
+const apiMount = (args.find((a) => a.startsWith("--api-mount="))?.split("=")[1] ?? "").replace(/^\/?(docs\/)?|\/$/g, "");
+const folder = args.find((a) => !a.startsWith("--")) ?? findDocsFolder(process.cwd());
 if (!folder || !existsSync(folder)) {
-  console.error("Docs folder not found. Pass it: node check.mjs <docs-folder>");
+  console.error("Docs folder not found. Pass it: node check.mjs <docs-folder> [--api-mount=api-reference]");
   process.exit(2);
 }
 
 const SLUG = /^[a-z0-9-]+(?:\/[a-z0-9-]+)*$/;
+
+// Rich blocks FrontLit supports: allowed props, and the container each child must sit in.
+const COMPONENTS = {
+  Callout: ["type", "title"],
+  Tabs: ["items"],
+  Tab: ["value"],
+  Steps: [],
+  Step: [],
+  Cards: [],
+  Card: ["title", "href", "icon"],
+  Accordions: ["type"],
+  Accordion: ["title"],
+  CodeGroup: [],
+  TypeTable: ["type"],
+};
+const PARENT = { Tab: "Tabs", Step: "Steps", Card: "Cards", Accordion: "Accordions" };
+const CALLOUT_TYPES = ["note", "tip", "info", "warning", "danger"];
+const FENCE_META = /^title=(?:"[^"\n]+"|'[^'\n]+')$/;
 const files = [];
 (function walk(dir) {
   for (const name of readdirSync(dir).sort()) {
@@ -38,7 +59,7 @@ const files = [];
     if (statSync(path).isDirectory()) walk(path);
     else if (name.endsWith(".md")) files.push(path);
     else if (name.endsWith(".mdx"))
-      report(relative(folder, path), 0, "UNSUPPORTED_FILE", "Rename to .md and remove MDX syntax.");
+      report(relative(folder, path), 0, "UNSUPPORTED_FILE", "Rename to .md; only the supported rich blocks may remain.");
   }
 })(folder);
 
@@ -144,7 +165,39 @@ for (const path of files) {
 
   const ids = new Set();
   const links = [];
+  const stack = [];
   let fence = null;
+  let pending = null; // an opening tag whose props continue on later lines
+  const tag = (line, closing, name, rawProps, selfClosing) => {
+    if (!Object.hasOwn(COMPONENTS, name)) {
+      report(file, line, "UNSUPPORTED_NODE", `<${name}> is not a supported component (Callout, Tabs, Tab, Steps, Step, Cards, Card, Accordions, Accordion, CodeGroup, TypeTable). Use Markdown, or wrap literal text in backticks.`);
+      return;
+    }
+    if (closing) {
+      const top = stack.pop();
+      if (top !== name) report(file, line, "UNSUPPORTED_NODE", `</${name}> does not match ${top ? `<${top}>` : "an open tag"}.`);
+      return;
+    }
+    const parent = stack[stack.length - 1];
+    if (PARENT[name] && parent !== PARENT[name])
+      report(file, line, "UNSUPPORTED_NODE", `<${name}> must be directly inside <${PARENT[name]}>.`);
+    const container = Object.entries(PARENT).find(([, p]) => p === parent)?.[0];
+    if (container && name !== container)
+      report(file, line, "UNSUPPORTED_NODE", `<${parent}> can only contain <${container}>.`);
+    const props = {};
+    for (const m of rawProps.matchAll(/([A-Za-z_][\w-]*)(?:=("[^"]*"|'[^']*'|\{[\s\S]*?\}(?=\s+[A-Za-z_][\w-]*=|\s*$)))?/g)) {
+      if (!COMPONENTS[name].includes(m[1])) report(file, line, "UNSUPPORTED_ATTRIBUTE", `<${name}> does not accept the prop "${m[1]}".`);
+      props[m[1]] = m[2];
+    }
+    if (name === "Callout" && props.type && !CALLOUT_TYPES.includes(props.type.slice(1, -1)))
+      report(file, line, "UNSUPPORTED_ATTRIBUTE", `Callout type must be one of ${CALLOUT_TYPES.join(", ")}.`);
+    if (name === "Card" && !props.title) report(file, line, "INVALID_DOCUMENT", "<Card> needs a title.");
+    if (name === "Accordion" && !props.title) report(file, line, "INVALID_DOCUMENT", "<Accordion> needs a title.");
+    if (name === "TypeTable" && !props.type) report(file, line, "INVALID_DOCUMENT", "<TypeTable> needs a type={{ … }} prop.");
+    if (name === "Accordions" && props.type && !/^["'](single|multiple)["']$/.test(props.type))
+      report(file, line, "UNSUPPORTED_ATTRIBUTE", 'Accordions type must be "single" or "multiple".');
+    if (!selfClosing && name !== "TypeTable") stack.push(name);
+  };
   body.split(/\r?\n/).forEach((text, i) => {
     const line = i + 1 + offset;
     const open = text.match(/^\s{0,3}(`{3,}|~{3,})(.*)$/);
@@ -154,18 +207,46 @@ for (const path of files) {
     }
     if (open) {
       fence = open[1];
-      if (open[2].trim().split(/\s+/).length > 1)
-        report(file, line, "UNSUPPORTED_ATTRIBUTE", "Code fence metadata is unsupported; keep only the language.");
+      const info = open[2].trim();
+      const [lang, ...rest] = info.startsWith("title=") ? ["", info] : info.split(/\s+/);
+      const meta = rest.join(" ");
+      if (lang && !/^[\w+-]+$/.test(lang))
+        report(file, line, "UNSUPPORTED_ATTRIBUTE", `Code fence language "${lang}" must use letters, digits, "_", "+" or "-".`);
+      if (meta && !FENCE_META.test(meta))
+        report(file, line, "UNSUPPORTED_ATTRIBUTE", 'Code fence metadata other than title="…" is unsupported.');
       return;
     }
-    const prose = text.replace(/(`+)[\s\S]*?\1/g, "``");
+    let prose = text.replace(/(`+)[\s\S]*?\1/g, "``");
+    if (pending) {
+      pending.text += ` ${text.trim()}`;
+      if (!(pending.name === "TypeTable" ? /\/>\s*$/.test(text) : />\s*$/.test(text))) return;
+      prose = pending.text;
+      pending = null;
+    } else {
+      const start = prose.match(/^\s*<([A-Z][\w.]*)\b/);
+      const terminated = start && (start[1] === "TypeTable" ? /\/>\s*$/ : />\s*$/).test(prose);
+      if (start && !terminated) {
+        pending = { name: start[1], text: prose.trim(), line };
+        return;
+      }
+    }
+    if (/^\s*<TypeTable\b/.test(prose))
+      prose = `<TypeTable${/\btype=\{\{/.test(prose) ? " type={{}}" : ""} />`; // rows hold arbitrary text
     if (/^\s*(import|export)\s/.test(prose))
       report(file, line, "UNSUPPORTED_NODE", "MDX import/export lines are unsupported.");
-    const tag = prose
+    prose = prose
       .replace(/<(?:https?:|mailto:)[^>]*>/g, "")
-      .match(/(?<!\\)<\/?[A-Za-z][^>]*>?/);
-    if (tag)
-      report(file, line, "UNSUPPORTED_NODE", `HTML/JSX "${tag[0].slice(0, 40)}" is unsupported; use Markdown or wrap literal text in backticks.`);
+      .replace(/icon=\{\s*<([A-Za-z][\w-]*)\s*\/>\s*\}/g, 'icon="$1"');
+    for (const m of prose.matchAll(/(?<!\\)<(\/?)([A-Za-z][\w.]*)((?:\s[^<>]*?)?)(\/?)>/g)) {
+      if (m[2][0] === m[2][0].toLowerCase())
+        report(file, line, "UNSUPPORTED_NODE", `HTML "${m[0].slice(0, 40)}" is unsupported; use Markdown or wrap literal text in backticks.`);
+      else tag(line, m[1] === "/", m[2], m[3], m[4] === "/");
+    }
+    const stray = prose.replace(/(?<!\\)<\/?[A-Za-z][\w.]*(?:\s[^<>]*?)?\/?>/g, "").match(/(?<!\\)<\/?[A-Za-z][^>]*>?/);
+    if (stray)
+      report(file, line, "UNSUPPORTED_NODE", `"${stray[0].slice(0, 40)}" looks like HTML/JSX; wrap literal text in backticks or escape the "<".`);
+    if (stack[stack.length - 1] === "CodeGroup" && prose.trim() && !/^\s*<\/?CodeGroup/.test(prose))
+      report(file, line, "UNSUPPORTED_NODE", "<CodeGroup> can only contain code blocks.");
     if (/^\s*([-*+]|\d+[.)])\s+\[[ xX]\]\s/.test(text))
       report(file, line, "UNSUPPORTED_NODE", "Task lists are unsupported.");
     if (/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/.test(text) && text.includes(":"))
@@ -183,6 +264,9 @@ for (const path of files) {
       } else links.push({ href, line });
     }
   });
+  if (pending) report(file, pending.line, "UNSUPPORTED_NODE", `<${pending.name}> tag is never closed.`);
+  for (const name of stack) report(file, 0, "UNSUPPORTED_NODE", `<${name}> is never closed.`);
+  if (fence) report(file, 0, "UNSUPPORTED_NODE", "A code fence is never closed.");
   pages.push({ file, slug, ids, links });
 }
 
@@ -201,6 +285,7 @@ for (const page of pages)
     const target = new URL(href, `https://docs.invalid/docs/${page.slug}`);
     if (!target.pathname.startsWith("/docs/")) continue;
     const slug = decodeURIComponent(target.pathname.slice(6)).replace(/\/$/, "");
+    if (apiMount && (slug === apiMount || slug.startsWith(`${apiMount}/`))) continue; // generated from the OpenAPI spec
     const dest = slug === "" ? null : bySlug.get(slug);
     if (!dest) {
       report(page.file, line, "BROKEN_LINK", `No page at /docs/${slug} in this folder (fine only if it is already published).`);

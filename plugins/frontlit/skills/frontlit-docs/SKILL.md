@@ -1,11 +1,11 @@
 ---
 name: frontlit-docs
-description: Write, edit, or port documentation for FrontLit Docs in a Git repository. Use when the user wants to create or improve FrontLit docs pages, or migrate an existing docs site (Fumadocs, Docusaurus, Mintlify, Nextra, GitBook, VitePress, plain Markdown/MDX) into a FrontLit-connected docs folder and open a pull request.
+description: Write, edit, or port documentation for FrontLit Docs in a Git repository. Use when the user wants to create or improve FrontLit docs pages, or migrate an existing docs site (Fumadocs, Docusaurus, Mintlify, Nextra, GitBook, VitePress, plain Markdown/MDX), including an OpenAPI-generated API reference, into a FrontLit-connected docs folder and open a pull request.
 ---
 
 # FrontLit Docs
 
-FrontLit publishes docs from a folder of plain Markdown files in a GitHub repository. A merged pull request goes live automatically after FrontLit validates it. Your job is to produce files that pass that validation on the first try and read well.
+FrontLit publishes docs from a folder of Markdown files (with a small set of MDX-style rich blocks) in a GitHub repository, plus an optional API reference generated from an OpenAPI spec. A merged pull request goes live automatically after FrontLit validates it. Your job is to produce files that pass that validation on the first try and read well.
 
 Read these as needed:
 
@@ -38,9 +38,10 @@ MCP is optional for ordinary repository edits: use the bundled checker and PR va
 
 1. **Inventory.** Find the source docs (content folder, navigation config such as `meta.json`, `sidebars.js`, `mint.json`, `docs.json`, `_meta.json`, `SUMMARY.md`). Record every page with its current URL, title, description and nav position. Identify the framework and every custom component in use (`grep -ho "<[A-Z][A-Za-z]*" -r <content>` lists them).
 2. **Plan.** Map navigation groups to sections (folders + `_sections.json`), and map each page to a target path and `slug`. Keep current URLs where possible: set `slug` to the old path relative to `/docs`. Note generated pages (API references from OpenAPI, changelogs built from code) that have no source file; skip them and report them.
-3. **Convert** each page using `references/porting.md`. Change syntax only; keep the author's wording, examples and order. Never invent content to replace a widget; link to it or state what was removed.
-4. **Do not modify or delete the old docs site.** The user retires it after checking the result.
-5. Validate (step 3), then open one pull request containing all pages and `_sections.json`.
+3. **Convert** each page using `references/porting.md`. Change syntax only; keep the author's wording, examples and order. Keep supported rich blocks (Callout, Tabs, Steps, Cards, Accordions, CodeGroup, TypeTable) as they are; rename `.mdx` to `.md`. Never invent content to replace a widget; link to it or state what was removed.
+4. **API reference.** If the source generates one from OpenAPI, do not port its pages: point FrontLit at the committed spec instead (`references/porting.md`, "API reference"). It publishes the whole spec, so tell the user.
+5. **Do not modify or delete the old docs site.** The user retires it after checking the result.
+6. Validate (step 3), then open one pull request containing all pages and `_sections.json`.
 
 ## 3. Validate before opening the pull request
 
@@ -51,12 +52,12 @@ MCP is optional for ordinary repository edits: use the bundled checker and PR va
   node <path-to-this-skill>/scripts/check.mjs <docs-folder>
   ```
 
-  It catches the common failures (MDX/HTML, unsupported Markdown, bad frontmatter, invalid slugs, duplicate routes, broken internal links and anchors). It is a pre-check, not the authority: the `FrontLit / docs validation` check on the pull request is final. If it fails, read its annotations (and available MCP check reports), fix every reported issue and push to the same branch. Recheck the current PR head after the new remote result completes; a local pass alone does not establish remote success.
+  It catches the common failures (unknown components and bad component props or nesting, HTML, unsupported Markdown, bad frontmatter, invalid slugs, duplicate routes, broken internal links and anchors). It is a pre-check, not the authority: the `FrontLit / docs validation` check on the pull request is final. If it fails, read its annotations (and available MCP check reports), fix every reported issue and push to the same branch. Recheck the current PR head after the new remote result completes; a local pass alone does not establish remote success.
 
 ## 4. Pull request
 
 - Branch name: `docs/<short-topic>`; target the connected publishing branch.
 - Open it with `gh pr create` if the GitHub CLI is available; otherwise push the branch and give the user the GitHub compare link to open it.
 - Title: what changed, e.g. `Port docs from Fumadocs to FrontLit` or `Add webhooks guide`.
-- Description: pages added/changed, sections, anything skipped or simplified (generated pages, removed widgets, flattened tabs), and URLs that changed.
+- Description: pages added/changed, sections, anything skipped or simplified (generated pages, removed widgets, components that could not be kept), the API reference spec path and URL path if used, and URLs that changed.
 - Remind the user that merging publishes the pages, and that `published: false` pages are merged but stay private drafts.
