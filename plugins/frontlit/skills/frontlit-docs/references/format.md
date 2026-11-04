@@ -9,7 +9,7 @@ These rules mirror FrontLit's importer and validator. A file that breaks any of 
 - **Sections:** the first folder under the docs folder is the page's section (`docs/guides/upload.md` is in section `guides`). Pages directly in the docs folder have no section and appear under a fallback group. Deeper folders are allowed; they become part of the URL, not extra sections.
 - Folder names: lowercase letters, digits and hyphens.
 - `index.md` inside a folder is an ordinary page at the folder's URL (`guides/index.md` → `/docs/guides`). A root `index.md` is the page `/docs/index`; it does not replace the docs home page.
-- Images and other binaries cannot live in the repository for docs. Use absolute `https://` image URLs.
+- Images and other binaries cannot live in the repository for docs. Use absolute `https://` image URLs, each on its own line with blank lines around it; an image directly after a line of text renders inline in that paragraph.
 
 ## `_sections.json` (optional, in the docs folder root)
 
@@ -130,7 +130,7 @@ Rich blocks can't be nested inside inline text, and a block quote starting `> **
 ## Links
 
 - To another docs page: `/docs/<slug>`, e.g. `[Concepts](/docs/concepts)`. Relative links resolve against the current page's URL, so prefer the absolute `/docs/...` form. Do not link to `.md` files.
-- Anchors: `/docs/<slug>#<heading-id>`. Heading IDs are the heading text lowercased, punctuation removed, spaces turned into hyphens; repeated headings get `-2`, `-3`.
+- Anchors: `/docs/<slug>#<heading-id>`. A heading ID is the heading text lowercased, with everything except letters, digits, spaces, `_` and `-` removed, and each run of spaces turned into one hyphen: `Upload flow (drafts + sealing)` → `upload-flow-drafts-sealing`. Repeated headings get `-2`, `-3`.
 - Every internal link and anchor must resolve to a page in this pull request or already published. Broken links block publication.
 - External links: `https://`, `http://`, `mailto:`.
 
