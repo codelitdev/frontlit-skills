@@ -4,7 +4,7 @@ These rules mirror FrontLit's importer and validator. A file that breaks any of 
 
 ## Files and folders
 
-- Only `.md` files inside the docs folder are read. `.mdx` files are reported as unsupported. Other files are ignored.
+- Only `.md` files inside the docs folder are read, **including pages that use rich blocks**. `.mdx` files are reported as unsupported: rename them to `.md`. Other files are ignored.
 - Paths: lowercase ASCII letters, digits and hyphens (`getting-started.md`), unless the page sets an explicit `slug`. No spaces, underscores or uppercase in a path that becomes a URL.
 - **Sections:** the first folder under the docs folder is the page's section (`docs/guides/upload.md` is in section `guides`). Pages directly in the docs folder have no section and appear under a fallback group. Deeper folders are allowed; they become part of the URL, not extra sections.
 - Folder names: lowercase letters, digits and hyphens.
@@ -57,23 +57,75 @@ nav_order: 20
 
 ## Markdown
 
-Supported: paragraphs, headings `#`–`######`, **bold**, *italic*, ~~strike~~, `inline code`, links, images, block quotes, ordered and bulleted lists (nested), fenced code blocks with a language, tables, horizontal rules, hard line breaks.
+Supported: paragraphs, headings `#`–`######`, **bold**, *italic*, ~~strike~~, `inline code`, links, images, block quotes, ordered and bulleted lists (nested), fenced code blocks with a language and an optional `title="…"`, tables, horizontal rules, hard line breaks, and the rich blocks below.
 
 Not supported (each one fails validation):
 
 | Construct | Use instead |
 | --- | --- |
-| MDX/JSX components, `import`/`export` lines | See `porting.md` |
+| Components other than the rich blocks below, `import`/`export` lines, `{expressions}` in props | See `porting.md` |
 | Raw HTML (`<details>`, `<br>`, `<img>`, `<div>`…) | Markdown equivalent, or remove |
-| `<` followed by a letter in prose, e.g. `Array<string>`, `<your-key>` | Put it in backticks: `` `Array<string>` ``, or escape `\<` |
-| Code fence metadata: ```` ```ts title="app.ts" ````, ```` ```js {1,3} ```` | Language only (```` ```ts ````); put the filename in the sentence above |
+| `<` followed by a letter in prose, e.g. `Array<string>`, `<your-key>`, `<TSettings>` | Put it in backticks: `` `Array<string>` ``, or escape `\<` |
+| Code fence metadata other than `title="…"`: ```` ```js {1,3} ````, `showLineNumbers`, `twoslash` | Language and optional `title` only |
 | Task lists `- [ ]` / `- [x]` | Plain list items |
 | Table column alignment (`:---`, `:---:`, `---:`) | Plain `---` |
 | Bold/italic around inline code (`` **`code`** ``) | Inline code alone |
 | Footnotes, math, definition lists, emoji shortcodes | Plain text |
 | `data:`, `blob:` or signed/expiring URLs | Stable `https://` URLs |
 
-Code fence language: any identifier (`bash`, `ts`, `json`). Use `bash` for shell; framework-specific labels like `npm` are not special.
+Code fence language: `[A-Za-z0-9_+-]` only (`bash`, `ts`, `json`). Use `bash` for shell; framework-specific labels like `npm` are not special. Inside a code fence everything is literal, including `<` and JSX.
+
+## Rich blocks
+
+Eleven MDX-style tags are supported. Props must be string literals or literal values (`items={["npm", "pnpm"]}`); a page that uses any of them is parsed with MDX rules.
+
+- Put every tag on its own line, with a **blank line** after each opening tag and before each closing tag, so Markdown inside is parsed as Markdown. Indentation inside a component is layout only, not an indented code block.
+- Any other capitalised tag is an error (`Unknown component <Foo>`), as are spread props and non-literal expressions.
+
+| Component | Props | Children |
+| --- | --- | --- |
+| `<Callout>` | `type`: `note`, `tip`, `info`, `warning`, `danger` (default info); `title` | Any blocks |
+| `<Tabs>` | `items`: list of strings (optional) | One or more `<Tab>` |
+| `<Tab>` | `value`: label. Must be in `items` when `items` is set; without `value`, the Nth `items` entry is used | Any blocks |
+| `<Steps>` | none | One or more `<Step>` |
+| `<Step>` | none | Any blocks, usually starting with a `###` heading |
+| `<Cards>` | none | One or more `<Card>` |
+| `<Card>` | `title` (required); `href` (safe URL, e.g. `/docs/slug`); `icon`: a Lucide icon name, as `icon="Rocket"` or Fumadocs-style `icon={<Rocket />}` | Optional body; self-closing is allowed |
+| `<Accordions>` | `type`: `single` or `multiple` | One or more `<Accordion>` |
+| `<Accordion>` | `title` (required) | Any blocks |
+| `<CodeGroup>` | none | **Only** fenced code blocks; each fence's `title` is its tab label |
+| `<TypeTable>` | `type={{ name: { type: "string", default: "x", description: "…", required: true } }}`; self-closing, no children | none |
+
+`<TypeTable>` fields: `type` is required and a string; `default` and `description` are strings; `required` is a boolean. Anything else (numbers or objects for `default`, other keys) fails. Write non-string defaults as strings (`default: "10"`).
+
+````markdown
+<Callout type="warning" title="Heads up">
+
+Callouts hold **any** blocks, including [links](/docs/setup).
+
+</Callout>
+
+<CodeGroup>
+
+```bash title="npm"
+npm install medialit
+```
+
+```bash title="pnpm"
+pnpm add medialit
+```
+
+</CodeGroup>
+
+<TypeTable
+  type={{
+    apiKey: { type: "string", default: "MEDIALIT_API_KEY", description: "Your app's key." },
+    access: { type: '"public" | "private"', required: true },
+  }}
+/>
+````
+
+Rich blocks can't be nested inside inline text, and a block quote starting `> **Warning:**` is still valid plain Markdown if a simpler form is preferred.
 
 ## Links
 
@@ -85,3 +137,7 @@ Code fence language: any identifier (`bash`, `ts`, `json`). Use `bash` for shell
 ## Size limits
 
 1 MB per page, 32 KB of frontmatter, 20,000 Markdown nodes.
+
+## API reference (not a Markdown folder)
+
+An API reference is generated from an OpenAPI 3.x spec, not written as pages. The spec path and URL path are set in the GitHub integration settings (or with the MCP API-reference tools; see `mcp.md`), not in `_sections.json`. See `porting.md`. The URL path (default `api-reference`) is reserved: no Markdown page or `slug` may resolve under `/docs/<mount>/`.

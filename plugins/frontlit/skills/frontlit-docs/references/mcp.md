@@ -10,6 +10,14 @@ Discover available tools and inspect their current schemas; clients may prefix t
 
 Do not change ownership, pause sync, grant capabilities or connect/disconnect a repository just to bypass a write failure. Some setup/activation tools require the original account's interactive browser consent and cannot finalize through MCP; follow their returned action instead of repeatedly retrying.
 
+## API reference (OpenAPI)
+
+The API reference is configured on the Git connection, separate from the docs folder. Discover the exact tool names and schemas first (they mirror the REST operations `getApiReference`, `previewApiReference`, `updateApiReference`).
+
+- Get status: the saved spec path and URL path, the live reference, and the latest failed import with diagnostics (`OPENAPI_NOT_FOUND`, `OPENAPI_PARSE`, `OPENAPI_INVALID`, `OPENAPI_UNSUPPORTED`, `OPENAPI_LIMIT`, `OPENAPI_DUPLICATE_OPERATION`, `ROUTE_COLLISION`).
+- Preview: dry-runs the import on the connected branch's head, so the spec must already be committed and pushed there. It reports the operation pages that would publish and any problems. Use it before saving.
+- Update: saves the spec path and URL path and syncs immediately; a null spec path unpublishes the API reference. This changes the live site and makes the whole spec public, so only call it when the user asked for it.
+
 ## Validate unsaved content
 
 The current tool is `validate_documentation`. Its argument is an `input` object. To validate a proposed document without saving it:
