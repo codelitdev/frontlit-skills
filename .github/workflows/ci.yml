@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Plugin and marketplace manifests are valid JSON
+        run: |
+          for f in .claude-plugin/marketplace.json plugins/frontlit/.claude-plugin/plugin.json plugins/frontlit/.mcp.json; do
+            node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$f"
+          done
+
+      - name: frontlit-docs checker
+        run: node plugins/frontlit/skills/frontlit-docs/scripts/check.test.mjs
+
+      - name: frontlit-pages authoring helpers
+        run: node plugins/frontlit/skills/frontlit-pages/scripts/authoring-helpers.test.mjs
+
+      - name: frontlit-pages examples stay valid and canonical
+        working-directory: plugins/frontlit/skills/frontlit-pages/examples
+        run: node ../scripts/check.mjs frontlit/pages
