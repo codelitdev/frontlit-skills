@@ -120,6 +120,13 @@ for (const [name, body] of Object.entries(bad)) {
   assert.ok(!r.ok, `${name} should fail`);
 }
 
+// Heading IDs collapse each run of spaces into one hyphen, unlike Fumadocs/GitHub's "--".
+const heading = "## Upload flow (drafts + sealing)";
+r = run({ "a.md": "[Flow](/docs/b#upload-flow-drafts-sealing)", "b.md": heading });
+assert.ok(r.ok, r.text);
+r = run({ "a.md": "[Flow](/docs/b#upload-flow-drafts--sealing)", "b.md": heading });
+assert.ok(!r.ok && r.text.includes("BROKEN_ANCHOR"), r.text);
+
 // Links under the API mount are generated, so they are not checked.
 r = run({ "a.md": "[Upload](/docs/api-reference/upload)" });
 assert.ok(!r.ok);
