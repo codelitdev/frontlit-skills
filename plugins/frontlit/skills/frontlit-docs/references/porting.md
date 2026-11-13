@@ -54,8 +54,7 @@ Delete all `import`/`export` lines first. Then convert per component. **Keep a s
 | Task lists `- [ ]` | Plain list items |
 | Badges and button images that are links, `[![alt](img)](url)` | A text link: `[Deploy to X](url)` |
 | Empty links `[text]()` (placeholders left in the source) | Link to the right page if one exists, otherwise drop the link and keep the sentence. Report it in the PR |
-| `- 1. text` bullets used to number items in a screenshot legend | `1. text` as an ordered list |
-| A labelled blockquote, `> **Note**: …` | Keep it as a block quote, or use `<Callout>` when it should stand out |
+| List items that start with another marker, e.g. `- 1. text` used to number a screenshot legend | `1. text` as an ordered list, or `- **(1) Name**: …` |
 
 Prose that merely contains `<` and a letter (`Array<string>`, `<your-key>`, `<TSettings>` in a sentence) is not a component: wrap it in backticks.
 
@@ -111,11 +110,11 @@ To publish an earlier version of the docs next to the current one (for example u
 
 ## Diagnosing a failed remote check
 
-FrontLit's pull request check stops at the **first** error and fixing it can reveal the next, so expect several rounds even when the local checker passes. A single-line summary such as `INVALID_DOCUMENT` may come with no file or line; the check then reports `0 public docs`.
+An error that stops a document from importing (`INVALID_DOCUMENT`, `UNSUPPORTED_NODE`, `UNSAFE_URL`) fails the whole check (`0 public docs`) and hides the remaining problems, so fixing one can reveal the next; expect several rounds even when the local checker passes. Such an error may come with no file or line.
 
 1. Read the check's annotations on the exact head commit (`gh api repos/<owner>/<repo>/check-runs/<id>/annotations`).
 2. With no annotation, bisect: on a throwaway branch and draft pull request, remove half of the pages, push and read the summary (a result with a non-zero page count means the parser got through the remaining pages). Narrow to one file, then to the construct. Delete the throwaway branches afterwards.
-3. Compare the offending file with the rules in `format.md`; typical causes are an empty link, an image inside a link, or a bullet that starts with an ordered marker.
+3. Compare the offending file with the rules in `format.md`; typical causes are an empty link, an image inside a link, or a list item that starts with another list marker.
 4. Add the construct to your conversion checklist and search the rest of the folder for it.
 
 `EXTERNAL_MEDIA` in the summary is informational: it lists images served from another site. It does not fail the check, but those images stop rendering if the other site goes away, so list them in the pull request.

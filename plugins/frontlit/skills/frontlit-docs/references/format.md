@@ -70,7 +70,7 @@ Not supported (each one fails validation):
 | Task lists `- [ ]` / `- [x]` | Plain list items |
 | A link with an empty destination, `[text]()` | Give it a URL, or remove the link and keep the text |
 | An image inside a link, `[![alt](https://…/badge.svg)](https://…)` (badges, button images) | A text link, or the image on its own line |
-| A bullet that starts with an ordered marker, `- 1. text` (rejected as `INVALID_DOCUMENT`) | An ordered list, `1. text`; if the number only labels a callout in a screenshot, write it as part of the text, e.g. `- **(1) Name**: …` |
+| A list item that starts with another list marker: `- 1. text`, `- - text`, `1. - text`, `1. 1. text` (rejected as `INVALID_DOCUMENT`, without a file or line) | One marker per line, e.g. `1. text`. If the number only labels part of a screenshot, make it text: `- **(1) Name**: …` |
 | Table column alignment (`:---`, `:---:`, `---:`) | Plain `---` |
 | Bold/italic around inline code (`` **`code`** ``) | Inline code alone |
 | Footnotes, math, definition lists, emoji shortcodes | Plain text |

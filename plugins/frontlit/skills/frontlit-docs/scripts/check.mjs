@@ -200,15 +200,16 @@ for (const path of files) {
   };
   body.split(/\r?\n/).forEach((text, i) => {
     const line = i + 1 + offset;
-    // A fence may be indented, e.g. inside a list item; its content is literal like any other fence.
-    const open = text.match(/^\s*(`{3,}|~{3,})(.*)$/);
+    // A fence may be indented, e.g. inside a list item. Its closing fence may be indented
+    // at most 3 spaces more than the opening one; deeper lines are fence content.
+    const open = text.match(/^(\s*)(`{3,}|~{3,})(.*)$/);
     if (fence) {
-      if (open && open[1][0] === fence[0] && open[1].length >= fence.length && !open[2].trim()) fence = null;
+      if (open && open[2][0] === fence.marker[0] && open[2].length >= fence.marker.length && open[1].length <= fence.indent + 3 && !open[3].trim()) fence = null;
       return;
     }
     if (open) {
-      fence = open[1];
-      const info = open[2].trim();
+      fence = { marker: open[2], indent: open[1].length };
+      const info = open[3].trim();
       const [lang, ...rest] = info.startsWith("title=") ? ["", info] : info.split(/\s+/);
       const meta = rest.join(" ");
       if (lang && !/^[\w+-]+$/.test(lang))
@@ -248,8 +249,8 @@ for (const path of files) {
       report(file, line, "UNSUPPORTED_NODE", `"${stray[0].slice(0, 40)}" looks like HTML/JSX; wrap literal text in backticks or escape the "<".`);
     if (stack[stack.length - 1] === "CodeGroup" && prose.trim() && !/^\s*<\/?CodeGroup/.test(prose))
       report(file, line, "UNSUPPORTED_NODE", "<CodeGroup> can only contain code blocks.");
-    if (/^\s*[-*+]\s+\d+[.)]\s/.test(text))
-      report(file, line, "INVALID_DOCUMENT", 'A bullet that starts with an ordered marker ("- 1. text") is rejected; use an ordered list ("1. text").');
+    if (/^\s*(?:[-*+]|\d+[.)])[ \t]+(?:[-*+]|\d+[.)])(?:[ \t]|$)/.test(text))
+      report(file, line, "INVALID_DOCUMENT", 'A list item that starts with another list marker ("- 1. text", "- - text", "1. - text") is rejected; use one marker per line, e.g. "1. text", or start the item with text such as "- **(1) Name**".');
     if (/(?<!\\)\[[^\]]*\]\(\s*\)/.test(prose))
       report(file, line, "UNSAFE_URL", "A link has an empty destination: give it a URL or remove the link.");
     if (/\[\s*!\[[^\]]*\]\([^)]*\)\s*\]\(/.test(prose))

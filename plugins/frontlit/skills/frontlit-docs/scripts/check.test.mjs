@@ -103,6 +103,16 @@ assert.ok(r.ok, r.text);
 r = run({ "a.md": "1. Run the command:\n\n    ```bash\n    deploy --region <name>\n    ```\n\n2. Done." });
 assert.ok(r.ok, r.text);
 
+// A deeper-indented fence line inside a fence is content, so the fence stays open until its real close.
+r = run({ "a.md": "```markdown\n1. Run:\n\n    ```bash\n    deploy\n    ```\n```\n\nAfter <the fence>." });
+assert.ok(!r.ok && r.text.includes("<the fence>"), r.text);
+r = run({ "a.md": "```markdown\n1. Run:\n\n    ```bash\n    deploy <name>\n    ```\n```" });
+assert.ok(r.ok, r.text);
+
+// Bold labels that carry a number, and dashes inside text, are not list markers.
+r = run({ "a.md": "- **(1) Name**: one\n- **Range**: 1 - 3\n- -1 is negative" });
+assert.ok(r.ok, r.text);
+
 // An image on its own line, a link on its own, and a plain ordered list with a nested bullet list are fine.
 r = run({ "a.md": "[Guide](https://example.com)\n\n![Screenshot](https://example.com/a.png)\n\n1. One\n   - nested\n2. Two" });
 assert.ok(r.ok, r.text);
@@ -125,6 +135,9 @@ const bad = {
   "empty link": "See [the guide]().",
   "image inside a link": "[![Build status](https://example.com/badge.svg)](https://example.com/ci)",
   "bullet starting with an ordered marker": "- 1. **First**: one\n- 2. **Second**: two",
+  "bullet starting with a bullet marker": "- - one",
+  "ordered item starting with a bullet marker": "1. - one",
+  "ordered item starting with an ordered marker": "1. 1. one",
 };
 for (const [name, body] of Object.entries(bad)) {
   r = run({ "a.md": body });
