@@ -198,17 +198,37 @@ for (const path of files) {
       report(file, line, "UNSUPPORTED_ATTRIBUTE", 'Accordions type must be "single" or "multiple".');
     if (!selfClosing && name !== "TypeTable") stack.push(name);
   };
+  // A page with rich blocks is parsed with MDX rules: indentation is layout, never an
+  // indented code block. A plain Markdown page follows CommonMark: four spaces past the
+  // enclosing list item's content (or the margin) start indented code, not a fence.
+  const mdx = /^\s*<(Callout|Tabs|Tab|Steps|Step|Cards|Card|Accordions|Accordion|CodeGroup|TypeTable)\b/m.test(body);
+  const lists = []; // content columns of the open list items, innermost last
+  let prevBlank = true;
+  let indentedCode = false;
   body.split(/\r?\n/).forEach((text, i) => {
     const line = i + 1 + offset;
-    // A fence may be indented, e.g. inside a list item. Its closing fence may be indented
-    // at most 3 spaces more than the opening one; deeper lines are fence content.
+    const indent = text.match(/^[ \t]*/)[0].replace(/\t/g, "    ").length;
+    const blank = !text.trim();
+    if (!fence && !blank && prevBlank) while (lists.length && lists[lists.length - 1] > indent) lists.pop();
+    const container = [...lists].reverse().find((col) => col <= indent) ?? 0;
+    const relative = indent - container;
+    // A closing fence may be indented at most 3 spaces more than the opening one;
+    // deeper lines are fence content.
     const open = text.match(/^(\s*)(`{3,}|~{3,})(.*)$/);
     if (fence) {
-      if (open && open[2][0] === fence.marker[0] && open[2].length >= fence.marker.length && open[1].length <= fence.indent + 3 && !open[3].trim()) fence = null;
+      if (open && open[2][0] === fence.marker[0] && open[2].length >= fence.marker.length && indent <= fence.indent + 3 && !open[3].trim()) fence = null;
+      prevBlank = false;
       return;
     }
-    if (open) {
-      fence = { marker: open[2], indent: open[1].length };
+    if (!mdx && !blank && relative >= 4 && (prevBlank || indentedCode)) {
+      indentedCode = true; // literal, like a fence
+      prevBlank = false;
+      return;
+    }
+    if (!blank) indentedCode = false;
+    prevBlank = blank;
+    if (open && (mdx || relative <= 3)) {
+      fence = { marker: open[2], indent };
       const info = open[3].trim();
       const [lang, ...rest] = info.startsWith("title=") ? ["", info] : info.split(/\s+/);
       const meta = rest.join(" ");
@@ -217,6 +237,12 @@ for (const path of files) {
       if (meta && !FENCE_META.test(meta))
         report(file, line, "UNSUPPORTED_ATTRIBUTE", 'Code fence metadata other than title="…" is unsupported.');
       return;
+    }
+    const item = text.match(/^([ \t]*)([-*+]|\d{1,9}[.)])([ \t]+|$)/);
+    if (item) {
+      while (lists.length && lists[lists.length - 1] > indent) lists.pop();
+      const gap = item[3].replace(/\t/g, "    ").length;
+      lists.push(indent + item[2].length + (gap >= 1 && gap <= 4 ? gap : 1));
     }
     let prose = text.replace(/(`+)[\s\S]*?\1/g, "``");
     if (pending) {

@@ -109,6 +109,22 @@ assert.ok(!r.ok && r.text.includes("<the fence>"), r.text);
 r = run({ "a.md": "```markdown\n1. Run:\n\n    ```bash\n    deploy <name>\n    ```\n```" });
 assert.ok(r.ok, r.text);
 
+// In a plain Markdown page, four spaces outside a list start indented code: a fence-like line
+// there is literal and does not hide the following prose, and Markdown examples in it are not checked.
+r = run({ "a.md": "Example:\n\n    ```\n\n<div>outside</div>\n\n```\nx\n```" });
+assert.ok(!r.ok && r.text.includes("<div>"), r.text);
+r = run({ "a.md": "Write lists like this:\n\n    - 1. text\n    <Foo>\n\nDone." });
+assert.ok(r.ok, r.text);
+// Inside a list item the same indentation is a fence, so its content is literal.
+r = run({ "a.md": "- Run:\n\n    ```bash\n    deploy <name>\n    ```" });
+assert.ok(r.ok, r.text);
+// A page with rich blocks uses MDX rules: indentation is layout, so an indented fence is still a fence
+// and indented prose is still checked.
+r = run({ "a.md": '<Callout type="note">\n\n    ```bash\n    deploy <name>\n    ```\n\n</Callout>' });
+assert.ok(r.ok, r.text);
+r = run({ "a.md": '<Callout type="note">\n\n    - 1. text\n\n</Callout>' });
+assert.ok(!r.ok && r.text.includes("INVALID_DOCUMENT"), r.text);
+
 // Bold labels that carry a number, and dashes inside text, are not list markers.
 r = run({ "a.md": "- **(1) Name**: one\n- **Range**: 1 - 3\n- -1 is negative" });
 assert.ok(r.ok, r.text);
