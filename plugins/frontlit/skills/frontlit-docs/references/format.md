@@ -68,12 +68,15 @@ Not supported (each one fails validation):
 | `<` followed by a letter in prose, e.g. `Array<string>`, `<your-key>`, `<TSettings>` | Put it in backticks: `` `Array<string>` ``, or escape `\<` |
 | Code fence metadata other than `title="…"`: ```` ```js {1,3} ````, `showLineNumbers`, `twoslash` | Language and optional `title` only |
 | Task lists `- [ ]` / `- [x]` | Plain list items |
+| A link with an empty destination, `[text]()` | Give it a URL, or remove the link and keep the text |
+| An image inside a link, `[![alt](https://…/badge.svg)](https://…)` (badges, button images) | A text link, or the image on its own line |
+| A bullet that starts with an ordered marker, `- 1. text` (rejected as `INVALID_DOCUMENT`) | An ordered list, `1. text`; if the number only labels a callout in a screenshot, write it as part of the text, e.g. `- **(1) Name**: …` |
 | Table column alignment (`:---`, `:---:`, `---:`) | Plain `---` |
 | Bold/italic around inline code (`` **`code`** ``) | Inline code alone |
 | Footnotes, math, definition lists, emoji shortcodes | Plain text |
 | `data:`, `blob:` or signed/expiring URLs | Stable `https://` URLs |
 
-Code fence language: `[A-Za-z0-9_+-]` only (`bash`, `ts`, `json`). Use `bash` for shell; framework-specific labels like `npm` are not special. Inside a code fence everything is literal, including `<` and JSX.
+Code fence language: `[A-Za-z0-9_+-]` only (`bash`, `ts`, `json`). Use `bash` for shell; framework-specific labels like `npm` are not special. Inside a code fence everything is literal, including `<` and JSX. A fence may be indented to sit inside a list item (`1. Run:` followed by an indented fence); it is still a fence.
 
 ## Rich blocks
 

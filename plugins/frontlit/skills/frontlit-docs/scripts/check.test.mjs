@@ -99,6 +99,14 @@ const a = <Foo bar />;
 let r = run({ "a.md": valid, "b.md": "Target." });
 assert.ok(r.ok, r.text);
 
+// A code fence may be indented inside a list item; its content (here `<name>`) stays literal.
+r = run({ "a.md": "1. Run the command:\n\n    ```bash\n    deploy --region <name>\n    ```\n\n2. Done." });
+assert.ok(r.ok, r.text);
+
+// An image on its own line, a link on its own, and a plain ordered list with a nested bullet list are fine.
+r = run({ "a.md": "[Guide](https://example.com)\n\n![Screenshot](https://example.com/a.png)\n\n1. One\n   - nested\n2. Two" });
+assert.ok(r.ok, r.text);
+
 // Each of these must be reported.
 const bad = {
   "unknown component": '<EmailBlockDemo block="x" />',
@@ -114,6 +122,9 @@ const bad = {
   "local image": "![x](/img.png)",
   "task list": "- [ ] one",
   "import": 'import X from "x"',
+  "empty link": "See [the guide]().",
+  "image inside a link": "[![Build status](https://example.com/badge.svg)](https://example.com/ci)",
+  "bullet starting with an ordered marker": "- 1. **First**: one\n- 2. **Second**: two",
 };
 for (const [name, body] of Object.entries(bad)) {
   r = run({ "a.md": body });

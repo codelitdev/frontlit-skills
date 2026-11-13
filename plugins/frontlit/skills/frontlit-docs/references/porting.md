@@ -52,6 +52,10 @@ Delete all `import`/`export` lines first. Then convert per component. **Keep a s
 | Admonition variables, `{props.x}`, JSX expressions | Write out the value |
 | Footnotes | Inline parentheses |
 | Task lists `- [ ]` | Plain list items |
+| Badges and button images that are links, `[![alt](img)](url)` | A text link: `[Deploy to X](url)` |
+| Empty links `[text]()` (placeholders left in the source) | Link to the right page if one exists, otherwise drop the link and keep the sentence. Report it in the PR |
+| `- 1. text` bullets used to number items in a screenshot legend | `1. text` as an ordered list |
+| A labelled blockquote, `> **Note**: …` | Keep it as a block quote, or use `<Callout>` when it should stand out |
 
 Prose that merely contains `<` and a letter (`Array<string>`, `<your-key>`, `<TSettings>` in a sentence) is not a component: wrap it in backticks.
 
@@ -94,6 +98,27 @@ Paths on the site's own domain can instead be redirected with `redirects` in `si
 - Anchors may change. Fumadocs, Docusaurus and GitHub turn every space into a hyphen, so `## Upload flow (drafts + sealing)` is `#upload-flow-drafts--sealing`. FrontLit turns each run of spaces into one hyphen: `#upload-flow-drafts-sealing`. Fix such links (the checker reports them as `BROKEN_ANCHOR`), and list in the PR any old anchors that change, because external links to them will open at the top of the page.
 - Links to generated pages you skipped (e.g. API reference): point to their current live URL as an absolute `https://` link.
 - Images in the repo (`/images/x.png`, `./img.png`, `/screenshots/x.png`): FrontLit cannot publish repo binaries (a local image path fails with `UNMANAGED_BINARY`). Use the image's current public `https://` URL from the live site. If none exists, upload it to the team's FrontLit media library (MediaLit) when asked and you have access, else keep the alt text as a sentence and list the image in the PR description for the user to upload. Prefer stable, unsigned URLs.
+
+## Keeping an older version alongside the new docs
+
+To publish an earlier version of the docs next to the current one (for example under `/docs/legacy/...`), keep every page at the old path under a prefix and leave the current docs at `/docs/...`.
+
+- The **first folder** under the docs folder is the section, and deeper folders only extend the URL. Putting the old pages in `legacy/<category>/` therefore gives one flat "Legacy" section in the sidebar.
+- To keep the old grouping, use one folder per group (`legacy-<category>/`), one `_sections.json` entry each, and an explicit `slug: legacy/<category>/<page>` in every page. `slug` is independent of the file path, so the folder name never shows in the URL.
+- Give the old sections a high `order` so they sort after the current ones, and number `nav_order` the same way inside a single section.
+- Labels that repeat across groups ("Introduction") are ambiguous in a flat section: set `nav_title` to include the group.
+- Rewrite internal links to the prefixed URLs, and keep links to pages that no longer exist out of the port: link to the closest page, or remove the link and say so in the PR.
+
+## Diagnosing a failed remote check
+
+FrontLit's pull request check stops at the **first** error and fixing it can reveal the next, so expect several rounds even when the local checker passes. A single-line summary such as `INVALID_DOCUMENT` may come with no file or line; the check then reports `0 public docs`.
+
+1. Read the check's annotations on the exact head commit (`gh api repos/<owner>/<repo>/check-runs/<id>/annotations`).
+2. With no annotation, bisect: on a throwaway branch and draft pull request, remove half of the pages, push and read the summary (a result with a non-zero page count means the parser got through the remaining pages). Narrow to one file, then to the construct. Delete the throwaway branches afterwards.
+3. Compare the offending file with the rules in `format.md`; typical causes are an empty link, an image inside a link, or a bullet that starts with an ordered marker.
+4. Add the construct to your conversion checklist and search the rest of the folder for it.
+
+`EXTERNAL_MEDIA` in the summary is informational: it lists images served from another site. It does not fail the check, but those images stop rendering if the other site goes away, so list them in the pull request.
 
 ## Things to report in the pull request
 

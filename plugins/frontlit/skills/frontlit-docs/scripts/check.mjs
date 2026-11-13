@@ -200,7 +200,8 @@ for (const path of files) {
   };
   body.split(/\r?\n/).forEach((text, i) => {
     const line = i + 1 + offset;
-    const open = text.match(/^\s{0,3}(`{3,}|~{3,})(.*)$/);
+    // A fence may be indented, e.g. inside a list item; its content is literal like any other fence.
+    const open = text.match(/^\s*(`{3,}|~{3,})(.*)$/);
     if (fence) {
       if (open && open[1][0] === fence[0] && open[1].length >= fence.length && !open[2].trim()) fence = null;
       return;
@@ -247,6 +248,12 @@ for (const path of files) {
       report(file, line, "UNSUPPORTED_NODE", `"${stray[0].slice(0, 40)}" looks like HTML/JSX; wrap literal text in backticks or escape the "<".`);
     if (stack[stack.length - 1] === "CodeGroup" && prose.trim() && !/^\s*<\/?CodeGroup/.test(prose))
       report(file, line, "UNSUPPORTED_NODE", "<CodeGroup> can only contain code blocks.");
+    if (/^\s*[-*+]\s+\d+[.)]\s/.test(text))
+      report(file, line, "INVALID_DOCUMENT", 'A bullet that starts with an ordered marker ("- 1. text") is rejected; use an ordered list ("1. text").');
+    if (/(?<!\\)\[[^\]]*\]\(\s*\)/.test(prose))
+      report(file, line, "UNSAFE_URL", "A link has an empty destination: give it a URL or remove the link.");
+    if (/\[\s*!\[[^\]]*\]\([^)]*\)\s*\]\(/.test(prose))
+      report(file, line, "UNSUPPORTED_NODE", "An image inside a link (such as a badge) is unsupported; link the text or put the image on its own line.");
     if (/^\s*([-*+]|\d+[.)])\s+\[[ xX]\]\s/.test(text))
       report(file, line, "UNSUPPORTED_NODE", "Task lists are unsupported.");
     if (/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/.test(text) && text.includes(":"))
