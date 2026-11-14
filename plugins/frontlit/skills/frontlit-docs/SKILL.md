@@ -11,7 +11,7 @@ Read these as needed:
 
 - `references/format.md`: the exact file, frontmatter, Markdown, link and section rules. **Read before writing any file.**
 - `references/mcp.md`: current tools for source ownership, unsaved-document validation, Git check reports, connection and scopes. Read when using MCP or diagnosing a remote validation failure.
-- `references/porting.md`: the conversion table for other docs frameworks. Read when porting.
+- `references/porting.md`: the conversion table for other docs frameworks, how to keep an older version of the docs alongside the new one, and how to diagnose a failed remote check. Read when porting or when the remote check fails.
 - `references/writing.md`: how to write pages that work for readers, search and AI answers.
 
 ## Choose Git or MCP
@@ -55,7 +55,7 @@ MCP is optional for ordinary repository edits: use the bundled checker and PR va
 
   If the site has an API reference, pass its URL path (e.g. `--api-mount=api`). Links under `/docs/<url-path>/` are generated pages, so the checker skips them instead of reporting them as broken.
 
-  The checker catches the common failures (unknown components and bad component props or nesting, HTML, unsupported Markdown, bad frontmatter, invalid slugs, duplicate routes, broken internal links and anchors). It is a pre-check, not the authority: the `FrontLit / docs validation` check on the pull request is final. If it fails, read its annotations (and available MCP check reports), fix every reported issue and push to the same branch. Recheck the current PR head after the new remote result completes; a local pass alone does not establish remote success.
+  The checker catches the common failures (unknown components and bad component props or nesting, HTML, unsupported Markdown, bad frontmatter, invalid slugs, duplicate routes, broken internal links and anchors). It is a pre-check, not the authority: the `FrontLit / docs validation` check on the pull request is final. If it fails, read its annotations (and available MCP check reports), fix every reported issue and push to the same branch. Recheck the current PR head after the new remote result completes; a local pass alone does not establish remote success. The remote check stops at the first error and can fail without a file or line; see "Diagnosing a failed remote check" in `references/porting.md`.
 - If the repository's CI formats or lints Markdown (Prettier, markdownlint), run it on the new files, then run the checker again, because formatters rewrite Markdown.
 
 ## 4. Pull request

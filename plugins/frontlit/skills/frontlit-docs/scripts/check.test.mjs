@@ -99,6 +99,40 @@ const a = <Foo bar />;
 let r = run({ "a.md": valid, "b.md": "Target." });
 assert.ok(r.ok, r.text);
 
+// A code fence may be indented inside a list item; its content (here `<name>`) stays literal.
+r = run({ "a.md": "1. Run the command:\n\n    ```bash\n    deploy --region <name>\n    ```\n\n2. Done." });
+assert.ok(r.ok, r.text);
+
+// A deeper-indented fence line inside a fence is content, so the fence stays open until its real close.
+r = run({ "a.md": "```markdown\n1. Run:\n\n    ```bash\n    deploy\n    ```\n```\n\nAfter <the fence>." });
+assert.ok(!r.ok && r.text.includes("<the fence>"), r.text);
+r = run({ "a.md": "```markdown\n1. Run:\n\n    ```bash\n    deploy <name>\n    ```\n```" });
+assert.ok(r.ok, r.text);
+
+// In a plain Markdown page, four spaces outside a list start indented code: a fence-like line
+// there is literal and does not hide the following prose, and Markdown examples in it are not checked.
+r = run({ "a.md": "Example:\n\n    ```\n\n<div>outside</div>\n\n```\nx\n```" });
+assert.ok(!r.ok && r.text.includes("<div>"), r.text);
+r = run({ "a.md": "Write lists like this:\n\n    - 1. text\n    <Foo>\n\nDone." });
+assert.ok(r.ok, r.text);
+// Inside a list item the same indentation is a fence, so its content is literal.
+r = run({ "a.md": "- Run:\n\n    ```bash\n    deploy <name>\n    ```" });
+assert.ok(r.ok, r.text);
+// A page with rich blocks uses MDX rules: indentation is layout, so an indented fence is still a fence
+// and indented prose is still checked.
+r = run({ "a.md": '<Callout type="note">\n\n    ```bash\n    deploy <name>\n    ```\n\n</Callout>' });
+assert.ok(r.ok, r.text);
+r = run({ "a.md": '<Callout type="note">\n\n    - 1. text\n\n</Callout>' });
+assert.ok(!r.ok && r.text.includes("INVALID_DOCUMENT"), r.text);
+
+// Bold labels that carry a number, and dashes inside text, are not list markers.
+r = run({ "a.md": "- **(1) Name**: one\n- **Range**: 1 - 3\n- -1 is negative" });
+assert.ok(r.ok, r.text);
+
+// An image on its own line, a link on its own, and a plain ordered list with a nested bullet list are fine.
+r = run({ "a.md": "[Guide](https://example.com)\n\n![Screenshot](https://example.com/a.png)\n\n1. One\n   - nested\n2. Two" });
+assert.ok(r.ok, r.text);
+
 // Each of these must be reported.
 const bad = {
   "unknown component": '<EmailBlockDemo block="x" />',
@@ -114,6 +148,12 @@ const bad = {
   "local image": "![x](/img.png)",
   "task list": "- [ ] one",
   "import": 'import X from "x"',
+  "empty link": "See [the guide]().",
+  "image inside a link": "[![Build status](https://example.com/badge.svg)](https://example.com/ci)",
+  "bullet starting with an ordered marker": "- 1. **First**: one\n- 2. **Second**: two",
+  "bullet starting with a bullet marker": "- - one",
+  "ordered item starting with a bullet marker": "1. - one",
+  "ordered item starting with an ordered marker": "1. 1. one",
 };
 for (const [name, body] of Object.entries(bad)) {
   r = run({ "a.md": body });
