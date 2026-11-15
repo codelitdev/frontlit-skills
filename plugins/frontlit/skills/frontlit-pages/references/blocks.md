@@ -70,7 +70,8 @@ A scrolling row of text/icon chips: integrations, customer names, tech stack. It
 
 Plan cards. `layout`: `grid` (default), `stacked`, `highlight`. `title`, `description`, `headerAlignment`, `tiers: [{ "name", "price", "description", "features": [""], "buttonCaption", "buttonAction", "highlighted" }]`.
 
-- `price` is a display string: `"$29/mo"`, `"Free"`, `"Custom"`. There is no monthly/yearly switch; state the billing period in `price` or `description` ("$290/yr, 2 months free").
+- `price` is a display string: `"$29/mo"`, `"Free"`, `"Custom"`. No currency or period logic.
+- **Monthly/yearly switch:** set `"pricingSwitcher": true` to show a toggle above the plans. `price` is then the monthly price and each tier's `priceYearly` (and optional `buttonActionYearly`) is shown on Yearly; both fall back to the monthly values. Label the toggle with `monthlyPriceCaption` / `yearlyPriceCaption` ("Yearly, 2 months free") and pick the starting side with `defaultPeriod` (`"monthly"` or `"yearly"`, default yearly). Without the switch, state the period in `price` or `description`.
 - Highlight at most one tier (the one you want most people on). 2–4 tiers.
 - Features: concrete limits ("10,000 contacts") over adjectives ("Generous limits"). Put the differentiators first; "Everything in Pro, plus:" is fine as the first line.
 
@@ -115,5 +116,5 @@ Good for animated diagrams, data tables, tabbed code samples and logo strips wit
 
 Not page blocks: they live in `site.json` (`references/format.md`) and show on every page.
 
-- **header**: `layout` (`fixed`, `floating`, `centered`), `links: [{ "label", "href", "isButton" }]` (4–6 links), `ctaLabel` + `ctaHref` (the primary action, same as the homepage hero's), `linkAlignment`, `backdropBlur`, `logoCorners`. The logo and site name come from FrontLit's **Branding** settings, not from the file; use `get_team_settings` / `update_team_settings` (see `mcp.md`).
+- **header**: `layout` (`fixed`, `floating`, `centered`), `links: [{ "label", "href", "isButton" }]` (4–6 links), `ctaLabel` + `ctaHref` (the primary action, same as the homepage hero's), `linkAlignment`, `backdropBlur`, `logoCorners`, and `githubRepo` (`"owner/repo"` or a github.com URL; adds a GitHub icon link) with `showGithubStars: true` to show the live star count beside it. Prefer that over a plain "GitHub" text link. The logo and site name come from FrontLit's **Branding** settings, not from the file; use `get_team_settings` / `update_team_settings` (see `mcp.md`).
 - **footer**: `layout` (`columns`, `centered`, `minimal`), `tagline`, `columns: [{ "title", "links": [{ "label", "href" }] }]`, `copyrightText`, `showThemeSwitcher`.

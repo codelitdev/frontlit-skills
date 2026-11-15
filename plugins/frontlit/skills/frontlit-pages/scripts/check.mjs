@@ -219,8 +219,10 @@ function canonicalPage(page) {
 
 function canonicalSite(site) {
   const out = { $schema: SITE_URL };
-  for (const key of ["theme", "header", "footer", "redirects"]) {
-    if (site[key] === undefined) continue;
+  // Every key the schema knows, in schema order, so new site settings
+  // (such as agentInstructions) survive --fix instead of being dropped.
+  for (const key of Object.keys(SITE_SCHEMA.properties).filter((k) => k !== "$schema")) {
+    if (site[key] === undefined || site[key] === "") continue;
     let value = key === "header" || key === "footer" ? stripDefaults(SITE_SCHEMA.properties[key], site[key]) : site[key];
     if (key === "redirects") value = value.map(({ from, to, permanent }) => ({ from, to, ...(permanent === false ? { permanent } : {}) }));
     value = ordered(SITE_SCHEMA.properties[key], value);
@@ -303,7 +305,8 @@ function checkMarkdown(file, schema, value) {
   walk(schema, value, [], (s, v, path) => {
     if (!isMarkdown(s) || typeof v !== "string") return;
     for (const message of new Set(markdownProblems(v))) error(file, ptr(path), "UNSUPPORTED_MARKDOWN", message);
-    if (/^#\s/m.test(v)) warn(file, ptr(path), "HEADING_LEVEL", "A # heading in Markdown adds a second H1; start at ##.");
+    // agentInstructions is served as /llms.txt, which starts with one # title.
+    if (path[0] !== "agentInstructions" && /^#\s/m.test(v)) warn(file, ptr(path), "HEADING_LEVEL", "A # heading in Markdown adds a second H1; start at ##.");
   });
 }
 

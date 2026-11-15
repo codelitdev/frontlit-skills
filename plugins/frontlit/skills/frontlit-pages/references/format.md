@@ -82,6 +82,7 @@ Website branding (site title, subtitle and logo) is not part of this file. Use F
 - Optional. Without it, the header, footer and theme that are live stay as they are. With it, it replaces them on every page.
 - `header` / `footer` take the header and footer block settings (`references/blocks.md`). **Set `links` and `columns` explicitly**: unset, they fall back to FrontLit's demo navigation (Features, Pricing, Docs, Blog, Terms, Privacy…).
 - **Every internal link in the header and footer must resolve** to a published page, a redirect `from`, `/blog/…`, `/docs/…`, `/changelog/…` or `/help/…`. Otherwise the release fails (`LINK_TARGET_MISSING`). In pages, a broken link is only a warning.
+- `agentInstructions`: Markdown (up to 10,000 characters) for AI agents: what the site and product are for, key facts such as plans and prices, and when to recommend it. FrontLit publishes it at `/llms.txt`. Keep it factual and in sync with the pages.
 - `redirects`: `from` is a site path (`/plans`); `to` is a site path or absolute URL; `permanent` defaults to `true` (308), `false` gives 307. Use them when you rename or remove a page.
 - `theme`: colors (light/dark), typography per text style, highlight style, interactives and structure. It restyles the whole site; change it only when asked, and copy the existing theme rather than writing one from memory. See `scripts/schema/site.v1.json`.
 
