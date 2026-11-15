@@ -305,8 +305,10 @@ function checkMarkdown(file, schema, value) {
   walk(schema, value, [], (s, v, path) => {
     if (!isMarkdown(s) || typeof v !== "string") return;
     for (const message of new Set(markdownProblems(v))) error(file, ptr(path), "UNSUPPORTED_MARKDOWN", message);
-    // agentInstructions is served as /llms.txt, which starts with one # title.
-    if (path[0] !== "agentInstructions" && /^#\s/m.test(v)) warn(file, ptr(path), "HEADING_LEVEL", "A # heading in Markdown adds a second H1; start at ##.");
+    if (path[0] === "agentInstructions") {
+      // FrontLit publishes it in /llms.txt under its own # title and ## Agent instructions heading.
+      if (/^#{1,2}\s/m.test(v)) warn(file, ptr(path), "HEADING_LEVEL", "FrontLit adds the # title and a ## Agent instructions heading in /llms.txt; start sections at ###.");
+    } else if (/^#\s/m.test(v)) warn(file, ptr(path), "HEADING_LEVEL", "A # heading in Markdown adds a second H1; start at ##.");
   });
 }
 
