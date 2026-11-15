@@ -219,8 +219,10 @@ function canonicalPage(page) {
 
 function canonicalSite(site) {
   const out = { $schema: SITE_URL };
-  for (const key of ["theme", "header", "footer", "redirects"]) {
-    if (site[key] === undefined) continue;
+  // Every key the schema knows, in schema order, so new site settings
+  // (such as agentInstructions) survive --fix instead of being dropped.
+  for (const key of Object.keys(SITE_SCHEMA.properties).filter((k) => k !== "$schema")) {
+    if (site[key] === undefined || site[key] === "") continue;
     let value = key === "header" || key === "footer" ? stripDefaults(SITE_SCHEMA.properties[key], site[key]) : site[key];
     if (key === "redirects") value = value.map(({ from, to, permanent }) => ({ from, to, ...(permanent === false ? { permanent } : {}) }));
     value = ordered(SITE_SCHEMA.properties[key], value);
