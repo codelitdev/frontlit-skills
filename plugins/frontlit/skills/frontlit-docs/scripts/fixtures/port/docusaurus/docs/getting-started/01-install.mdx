@@ -1,0 +1,50 @@
+---
+title: Install Acme
+sidebar_label: Install
+sidebar_position: 1
+keywords: [install, cli]
+hide_title: true
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Install the CLI.
+
+:::tip Fast path
+Use the installer.
+:::
+
+<Tabs groupId="os">
+  <TabItem value="mac" label="macOS" default>
+
+```bash
+brew install acme
+```
+
+  </TabItem>
+  <TabItem value="linux" label="Linux">
+
+```bash {2} showLineNumbers
+curl -fsSL https://acme.example/install.sh | sh
+acme --version
+```
+
+  </TabItem>
+</Tabs>
+
+Next, [configure it](./02-configure.md#set-the-api-key--region).
+
+<details>
+<summary>Troubleshooting</summary>
+
+Run `acme doctor`.<br/>
+It prints a report.
+
+</details>
+
+![Diagram](/img/diagram.png)
+
+```js title="acme.config.js" {1}
+module.exports = { region: "us" };
+```

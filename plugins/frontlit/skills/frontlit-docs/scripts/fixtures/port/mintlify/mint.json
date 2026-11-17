@@ -1,0 +1,7 @@
+{
+  "name": "Acme",
+  "navigation": [
+    { "group": "Get Started", "pages": ["introduction", "quickstart"] },
+    { "group": "Essentials", "pages": ["essentials/code", { "group": "Media", "pages": ["essentials/images"] }] }
+  ]
+}
