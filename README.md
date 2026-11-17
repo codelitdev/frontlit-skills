@@ -48,6 +48,13 @@ npx skills add codelitdev/frontlit-skills
 
 This installs the two skills only. To connect your FrontLit account as well, see [Connect your FrontLit account](#connect-your-frontlit-account-optional).
 
+Run inside a repository, this command adds three things to it: the skills in `.agents/skills/`, links to them for your agent (such as `.claude/skills/`), and `skills-lock.json`, which records the installed version. Either:
+
+- **Commit them** so everyone on the team, and CI, uses the same version. `npx skills update` moves to the latest. If the repository runs a formatter or linter over all files, add `.agents/skills/` to its ignore list.
+- **Or keep them out of the repository:** install with `npx skills add -g codelitdev/frontlit-skills` instead, which installs for your user only. If you already installed into the repository, add `.agents/skills/`, `.claude/skills/` and `skills-lock.json` to `.gitignore` (not all of `.claude/`, which may hold shared settings).
+
+The plugins for Claude Code and Codex add nothing to the repository.
+
 If you installed the older `frontlit-docs` or `frontlit-pages` plugins, uninstall them and install `frontlit` instead.
 
 ## Try it
@@ -97,9 +104,9 @@ When you sign in, you pick which FrontLit team the agent can work on. No API key
 ## Good to know
 
 - **Review before you merge.** Merging a pull request publishes it. A docs page with `published: false` stays a private draft.
-- **Moving docs keeps your URLs.** The agent reuses your existing page addresses where it can and lists any that change in the pull request. Redirecting the old docs domain is up to you; the agent explains how.
+- **Moving docs keeps your URLs.** The agent reuses your existing page addresses where it can and lists any that change in the pull request. It also works out how to redirect your old docs address and puts that plan in the pull request. You add the redirect in FrontLit and update DNS when you're ready, and the agent can then check that every old link lands on the right page.
 - **Your old docs site stays put** until you've checked the new one and ask the agent to remove it.
-- **An API reference publishes your whole OpenAPI spec,** even from a private repository. The agent tells you before it sets one up.
+- **An API reference publishes your whole OpenAPI spec,** even from a private repository. The agent checks the spec first, tells you what to fix, and tells you before it sets one up.
 
 ## Contributing
 

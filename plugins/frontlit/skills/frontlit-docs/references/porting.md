@@ -16,7 +16,7 @@ node <path-to-this-skill>/scripts/port.mjs <source-content-dir> <target-docs-dir
 - `--prefix=<path>` puts every page under `<target>/<path>/…` with `slug: <path>/<old path>` (one sidebar section; see "Keeping an older version alongside the new docs"). Without it, each navigation group becomes a section folder and the old URL is kept with `slug` where the file path differs.
 - `--assets-base` rewrites relative and root-relative images to absolute URLs on the old site. Without it, each such image is listed for upload.
 - `--old-base` is the URL path the old site served the docs under (`docs` for Docusaurus by default, empty otherwise); it is used for the redirect map and to resolve absolute links.
-- It writes the pages, merges `_sections.json` (keeping existing sections), and writes `port-redirects.json` (old URL → new route) in the target's parent folder. It exits 0 even when there are review items, 2 on usage errors.
+- It writes the pages, merges `_sections.json` (keeping existing sections), and writes `port-redirects.json` in the target's parent folder: every page's old URL → new route, unchanged ones included, as input for `redirects.mjs` ("Redirects and retiring the old site"). Commit it with the port. It exits 0 even when there are review items, 2 on usage errors.
 
 It converts: frontmatter (title, falling back to the leading H1, which is removed; `description`; `sidebar_position`/`position`/`order` → `nav_order`, as group index × 1000 + position; `sidebar_label`/`sidebarTitle`/navigation labels → `nav_title`, prefixed with the group when a label repeats in one section; `draft`/`hidden` → `published: false`; other keys dropped); `.mdx` → `.md`; import/export lines and comments; `:::` admonitions, `> [!NOTE]` alerts, `<Note>`-style and `<Callout type>` components and GitBook hints → `<Callout>`; Docusaurus/Mintlify/Nextra/GitBook tabs → `<Tabs items>`/`<Tab value>`; Mintlify `<Step title>` and Nextra heading steps → `<Step>` with a `###` heading; `<CardGroup>`/`<Card>`, `<AccordionGroup>`, `<details><summary>`, `<CodeGroup>` and VitePress `::: code-group`/`::: details`; `<img>`, `<br>`, `<a>`, `<b>`, headings and simple wrappers (`<div>`, `<p>`, `<Frame>`) → Markdown; embeds → links; nested list markers, task lists, empty links, badge links, table alignment, bold inline code and prose generics such as `Array<string>`; code fence meta (keeps `title="…"`, turns Mintlify/VitePress tab labels into titles); and internal links → `/docs/<slug>#anchor` using the page map.
 
@@ -87,6 +87,13 @@ After converting, put a blank line after every opening tag and before every clos
 FrontLit generates the API reference from an OpenAPI spec; do not port generated pages or `<APIPage>` files.
 
 - **Fumadocs-OpenAPI** (`openapiSource`, `createOpenAPI`, `<APIPage>`, a folder holding only `meta.json`): the folder is the mount. Find the spec (a committed `.json`/`.yaml` file, or a URL such as `https://api.example.com/openapi.json`).
+- **Check the spec first**, before promising an API reference:
+
+  ```bash
+  node <path-to-this-skill>/scripts/openapi.mjs <spec.json|spec.yaml> --mount=<url-path> --routes [--cors-origin=https://<docs-origin>]
+  ```
+
+  Errors are what FrontLit's import refuses (the same rules, so fix them before configuring anything). Warnings are what it publishes in a reduced form (no absolute server URL turns "Try it" off). Notes are gaps to raise with the user: operations without an `operationId` (their page URLs follow the summary and change with it; ask the API's owners to add stable ids before links to the reference spread), security schemes "Try it" can't send, operations that don't declare `security`. `--routes` lists each operation's page, for the old → new URL list. `--cors-origin` sends only CORS preflights (OPTIONS), never the requests themselves, to the spec's server from the docs origin and lists the operations the API would refuse; run it only against an API the user has agreed to probe.
 - FrontLit needs a **committed** OpenAPI 3.0/3.1 single-file spec (≤ 5 MiB, ≤ 500 operations, no external `$ref`s, JSON or YAML) at a repository path. A spec that is only generated at build time or served from a URL must be committed first (usually a CI step or a one-off export).
 - Set the **spec path** and **URL path** in the integration settings (Settings → Integrations → GitHub) or with the MCP API-reference tools (`mcp.md`). Use the old mount name as the URL path (default `api-reference`) to keep `/docs/api-reference/…`. Operation slugs come from `operationId`, else `summary`, else method + path, so URLs may differ from fumadocs-openapi's; list old → new in the PR.
 - The URL path is reserved: no Markdown page may sit under it, so do not port that folder's pages.
@@ -98,14 +105,29 @@ FrontLit generates the API reference from an OpenAPI spec; do not port generated
 
 Do this only after the user has checked the port on FrontLit, and only when asked.
 
-**Old host** (e.g. `docs.example.com`): the team adds it in FrontLit under Website → Domain → Redirect domains, then creates the DNS records shown there (a TXT verification record and a CNAME). Do not change DNS yourself. Set the domain's:
+**Plan** from the URL map: `port-redirects.json` from `port.mjs`, or a JSON object of old path → new path you write from the inventory. Add the old API reference's operation URLs to it when they change (`openapi.mjs --routes` lists the new ones).
 
-- **Path prefix** to `/docs`, so `docs.example.com/guides/upload` goes to `/docs/guides/upload`. Leave it empty if the old site already served `/docs/...`.
-- **Renamed paths** for every URL that changed, one `/old-path /new-path` per line. These win over the prefix. API reference operations usually need them (`/api/uploadMedia /docs/api/upload-media`).
+```bash
+node <path-to-this-skill>/scripts/redirects.mjs port-redirects.json --host=docs.example.com [--json]
+node <path-to-this-skill>/scripts/check.mjs <docs-folder> --redirects=port-redirects.json
+```
 
-Paths on the site's own domain can instead be redirected with `redirects` in `site.json` (`frontlit-pages` skill).
+`redirects.mjs` picks the path prefix that covers the most pages and prints a rule for each page it doesn't (at most 500 rules; keeping old paths with `slug:` keeps the list short). A prefix can only be added in front: a site that moves from `/en/<page>` to `/docs/<page>` needs a rule per page. `--json` prints the hostname, `pathPrefix` and `rules`, which is what the MCP tools take. The checker confirms that every target is a public page and every `#anchor` a heading on it.
 
-**Check the redirects** once DNS is live: list every old URL (from the old site's sitemap or your inventory), request each one following redirects, and confirm it ends with a `200` on the intended page. Anchors pass through unchanged, so also check that old `#anchor` links still match (see "Links and assets").
+**Old host** (e.g. `docs.example.com`): the team adds it in FrontLit under Website → Domain → Redirect domains (or, when asked, `add_redirect_domain` with the hostname and prefix, then `update_redirect_domain` with the rules), then creates the DNS records shown there (a TXT verification record and a CNAME). Do not change DNS yourself. The domain's settings:
+
+- **Path prefix**, e.g. `/docs`, so `docs.example.com/guides/upload` goes to `/docs/guides/upload`. Empty if the old site already served `/docs/...`. Paths with no rule always get the prefix, so pages the map doesn't know about still land under it.
+- **Renamed paths**, one `/old-path /new-path` per line (the form's format, which `redirects.mjs` prints). These win over the prefix; a trailing slash on the old path doesn't matter.
+
+**Same domain:** when the old docs lived on the site's own domain (e.g. `example.com/help/...` moving to `example.com/docs/...`), redirect with `redirects` in `site.json` instead: `redirects.mjs port-redirects.json --site-json=<site-folder>/site.json` adds an entry for every changed path, keeping existing ones, and the `frontlit-pages` checker validates the result.
+
+**Check the redirects** once DNS is live:
+
+```bash
+node <path-to-this-skill>/scripts/redirects.mjs port-redirects.json --verify=https://docs.example.com
+```
+
+It requests every old URL, follows the redirects and lists each one that doesn't end with a `200` on its new path. Add URLs that aren't in the map (from the old site's sitemap or analytics) to it before verifying. Anchors pass through unchanged, so also check that old `#anchor` links still match (see "Links and assets").
 
 **Retire the old site** in pull requests separate from the content port:
 
@@ -161,5 +183,5 @@ An error that stops a document from importing (`INVALID_DOCUMENT`, `UNSUPPORTED_
 
 - Generated pages and how they were handled (API reference spec path and URL path, or skipped), with their current URLs.
 - Widgets removed, and tabs or components that could not be kept, per page.
-- URLs that could not be kept, old → new.
+- URLs that could not be kept, old → new, and the redirect plan from `redirects.mjs` (prefix and renamed paths), even when setting it up comes later.
 - Images that need uploading, or that were moved with `images.mjs`.
