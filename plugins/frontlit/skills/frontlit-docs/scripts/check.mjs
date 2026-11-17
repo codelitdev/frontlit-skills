@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 // Pre-check a FrontLit docs folder:
-//   node check.mjs [docs-folder] [--api-mount=api-reference] [--tree] [--no-parser] [--parser=<dir>]
+//   node check.mjs [docs-folder] [--api-mount=api-reference] [--tree] [--redirects=<map.json>]
+//                  [--no-parser] [--parser=<dir>]
 // --api-mount: URL path of the generated API reference; links under /docs/<mount>/ are not checked.
 // --tree:      print the sidebar FrontLit will build (sections, order, labels, drafts).
+// --redirects: a JSON map of old URL → new path (port-redirects.json); every /docs/ target
+//              must be a public page in this folder, and its #anchor a heading on it.
 // --no-parser: skip FrontLit's parser and use only the built-in rules (offline).
 // --parser:    a directory whose node_modules has @frontlit/text-editor (e.g. a local build).
 //
@@ -11,12 +14,9 @@
 // can't be loaded, built-in rules that mirror the common failures run instead. Cross-page
 // checks (routes, sections, links, anchors) always run here. FrontLit's pull request
 // check stays authoritative.
-import { readFileSync, readdirSync, statSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { join, relative, sep, dirname } from "node:path";
-import { homedir } from "node:os";
-import { createRequire } from "node:module";
-import { pathToFileURL } from "node:url";
-import { execFileSync } from "node:child_process";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { join, relative, sep } from "node:path";
+import { loadFrontlitParser, PACKAGE } from "./frontlit-parser.mjs";
 
 const problems = [];
 const warnings = [];
@@ -47,68 +47,11 @@ const apiMount = (option("api-mount") ?? "").replace(/^\/?(docs\/)?|\/$/g, "");
 const showTree = args.includes("--tree");
 const folder = args.find((a) => !a.startsWith("--")) ?? findDocsFolder(process.cwd());
 if (!folder || !existsSync(folder)) {
-  console.error("Docs folder not found. Pass it: node check.mjs <docs-folder> [--api-mount=api-reference] [--tree]");
+  console.error("Docs folder not found. Pass it: node check.mjs <docs-folder> [--api-mount=api-reference] [--tree] [--redirects=<map.json>]");
   process.exit(2);
 }
 
-// FrontLit's parser: --parser=<dir>, else the latest published version in a cache
-// (refreshed at most daily; FRONTLIT_PARSER_CACHE overrides the location).
-const PACKAGE = "@frontlit/text-editor";
-async function importFrom(dir) {
-  const require = createRequire(join(dir, "noop.js"));
-  const entry = require.resolve(`${PACKAGE}/docs`);
-  let version = "unknown";
-  for (let d = dirname(entry); d !== dirname(d); d = dirname(d)) {
-    const manifest = join(d, "package.json");
-    if (!existsSync(manifest)) continue;
-    const pkg = JSON.parse(readFileSync(manifest, "utf8"));
-    if (pkg.name === PACKAGE) {
-      version = pkg.version;
-      break;
-    }
-  }
-  return { docs: await import(pathToFileURL(entry).href), version };
-}
-async function loadParser() {
-  if (args.includes("--no-parser")) return { reason: "--no-parser" };
-  const local = option("parser");
-  if (local) {
-    try {
-      return await importFrom(local);
-    } catch (error) {
-      console.error(`Can't load ${PACKAGE} from ${local}: ${error.message}`);
-      process.exit(2);
-    }
-  }
-  const cache =
-    process.env.FRONTLIT_PARSER_CACHE ??
-    join(process.env.XDG_CACHE_HOME ?? join(homedir(), ".cache"), "frontlit-docs-check");
-  const stamp = join(cache, ".updated");
-  const fresh = existsSync(stamp) && Date.now() - statSync(stamp).mtimeMs < 24 * 3600 * 1000;
-  let installError;
-  if (!fresh) {
-    try {
-      mkdirSync(cache, { recursive: true });
-      if (!existsSync(join(cache, "package.json")))
-        writeFileSync(join(cache, "package.json"), '{ "private": true }\n');
-      console.error(`Updating FrontLit's parser (${PACKAGE}) in ${cache}…`);
-      execFileSync(
-        "npm",
-        ["install", "--no-audit", "--no-fund", "--loglevel=error", `${PACKAGE}@latest`],
-        { cwd: cache, stdio: ["ignore", "ignore", "pipe"], timeout: 300_000, shell: process.platform === "win32" },
-      );
-      writeFileSync(stamp, new Date().toISOString());
-    } catch (error) {
-      installError = String(error.stderr || error.message).trim().split("\n")[0];
-    }
-  }
-  try {
-    return await importFrom(cache);
-  } catch (error) {
-    return { reason: installError ?? error.message };
-  }
-}
-const parser = await loadParser();
+const parser = await loadFrontlitParser({ noParser: args.includes("--no-parser"), parserDir: option("parser") });
 if (parser.docs) console.log(`Parsing with FrontLit's parser (${PACKAGE} ${parser.version}).`);
 else
   console.log(
@@ -462,6 +405,33 @@ for (const page of pages)
     if (anchor && !dest.ids.has(anchor))
       report(page.file, line, "BROKEN_ANCHOR", `No heading "#${anchor}" on /docs/${slug}.`);
   }
+
+// Redirect targets: a redirect to a missing or draft page is a 404 for every old link.
+const redirectMap = option("redirects");
+if (redirectMap) {
+  let map;
+  try {
+    map = JSON.parse(readFileSync(redirectMap, "utf8"));
+  } catch (error) {
+    console.error(`Can't read --redirects=${redirectMap}: ${error.message}`);
+    process.exit(2);
+  }
+  const name = redirectMap.split(/[\\/]/).pop();
+  for (const [from, to] of Object.entries(map)) {
+    if (typeof to !== "string" || !/^\/docs(\/|#|$)/.test(to)) continue; // other site paths and URLs
+    const target = new URL(to, "https://docs.invalid");
+    const slug = decodeURIComponent(target.pathname.slice(6)).replace(/\/$/, "");
+    if (slug === "" || (apiMount && (slug === apiMount || slug.startsWith(`${apiMount}/`)))) continue;
+    const dest = routes.has(slug) ? bySlug.get(slug) : null;
+    if (!dest) {
+      report(name, 0, "REDIRECT_TARGET_MISSING", `${from} → ${to}: ${bySlug.has(slug) ? "that page is a draft" : "no page has that route"}.`);
+      continue;
+    }
+    const anchor = decodeURIComponent(target.hash.slice(1));
+    if (anchor && !dest.ids.has(anchor))
+      report(name, 0, "BROKEN_ANCHOR", `${from} → ${to}: no heading "#${anchor}" on /docs/${slug}.`);
+  }
+}
 
 // The sidebar as FrontLit builds it: sections come from first-level folders in path
 // order, then _sections.json renames and reorders them; pages sort by nav_order, then
