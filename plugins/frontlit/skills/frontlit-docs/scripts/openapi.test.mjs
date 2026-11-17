@@ -95,6 +95,30 @@ assert.equal(cors.checked, 2);
 assert.deepEqual(cors.failures.map((f) => [f.path, f.problems]), [["/files/{id}", ["header(s) x-api-key not in Access-Control-Allow-Headers"]]]);
 assert.ok(seen.every((s) => s.startsWith("OPTIONS ")), "only preflights are sent");
 assert.ok(seen.includes("OPTIONS /files/example"), "path parameters are filled in");
+
+// A failed preflight, and "*" standing in for Authorization, are refusals; every operation is checked.
+const strict = createServer((req, res) => {
+  const ok = req.url !== "/broken";
+  res.writeHead(ok ? 204 : 404, {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "*",
+    "access-control-allow-headers": "*",
+  });
+  res.end();
+});
+await new Promise((done) => strict.listen(0, "127.0.0.1", done));
+const strictUrl = `http://127.0.0.1:${strict.address().port}`;
+const paths = Object.fromEntries(Array.from({ length: 150 }, (_, i) => [`/p${i}`, { get: { operationId: `p${i}`, security: [] } }]));
+paths["/broken"] = { get: { operationId: "broken", security: [] } };
+paths["/bearer"] = { get: { operationId: "bearer", security: [{ token: [] }] } };
+r = checkSpec(spec({ servers: [{ url: strictUrl }], components: { securitySchemes: { token: { type: "http", scheme: "bearer" } } }, paths }));
+const strictCors = await checkCors(r.operations, "https://docs.example.com");
+assert.equal(strictCors.checked, 152);
+assert.deepEqual(
+  strictCors.failures.map((f) => [f.path, f.problems]).sort(),
+  [["/bearer", ["header(s) authorization not in Access-Control-Allow-Headers"]], ["/broken", ["preflight answered 404"]]],
+);
+strict.close();
 api.close();
 
 // CLI: JSON spec, exit codes, --routes.

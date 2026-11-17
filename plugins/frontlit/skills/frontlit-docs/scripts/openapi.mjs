@@ -180,9 +180,10 @@ export function checkSpec(root, { mount = "api-reference", parseMarkdown } = {})
   return { errors, warnings, notes, operations };
 }
 
-/** OPTIONS preflights like the "Try it" panel's; resolves to the operations that fail. */
-export async function checkCors(operations, origin, { concurrency = 6, limit = 100 } = {}) {
-  const queue = operations.filter((o) => o.server).slice(0, limit);
+/** OPTIONS preflights like the "Try it" panel's, for every operation with a server (a spec
+ * has at most 500); resolves to the operations a browser would refuse. */
+export async function checkCors(operations, origin, { concurrency = 6 } = {}) {
+  const queue = operations.filter((o) => o.server);
   const failures = [];
   let checked = 0;
   await Promise.all(
@@ -208,10 +209,13 @@ export async function checkCors(operations, origin, { concurrency = 6, limit = 1
           const allowMethods = (res.headers.get("access-control-allow-methods") ?? "").toUpperCase().split(/\s*,\s*/);
           const allowHeaders = (res.headers.get("access-control-allow-headers") ?? "").toLowerCase().split(/\s*,\s*/);
           const problems = [];
+          // Browsers refuse a preflight that doesn't succeed, whatever its headers say.
+          if (!res.ok) problems.push(`preflight answered ${res.status}`);
           if (allowOrigin !== "*" && allowOrigin !== origin) problems.push(`origin not allowed (Access-Control-Allow-Origin: ${allowOrigin ?? "missing"})`);
           // GET/HEAD/POST are allowed without being listed; others must be.
           if (!["GET", "HEAD", "POST"].includes(method) && !allowMethods.includes(method) && !allowMethods.includes("*")) problems.push(`${method} not in Access-Control-Allow-Methods`);
-          const missing = [...headers].filter((h) => !allowHeaders.includes(h) && !allowHeaders.includes("*"));
+          // "*" never covers Authorization: it must be listed by name.
+          const missing = [...headers].filter((h) => !allowHeaders.includes(h) && (h === "authorization" || !allowHeaders.includes("*")));
           if (missing.length) problems.push(`header(s) ${missing.join(", ")} not in Access-Control-Allow-Headers`);
           if (problems.length) failures.push({ ...op, status: res.status, problems });
         } catch (error) {
