@@ -9,7 +9,7 @@ These rules mirror FrontLit's importer and validator. A file that breaks any of 
 - **Sections:** the first folder under the docs folder is the page's section (`docs/guides/upload.md` is in section `guides`). Pages directly in the docs folder have no section and appear under a fallback group. Deeper folders are allowed; they become part of the URL, not extra sections.
 - Folder names: lowercase letters, digits and hyphens.
 - `index.md` inside a folder is an ordinary page at the folder's URL (`guides/index.md` → `/docs/guides`). A root `index.md` is the page `/docs/index`; it does not replace the docs home page.
-- Images and other binaries cannot live in the repository for docs. Use absolute `https://` image URLs, each on its own line with blank lines around it; an image directly after a line of text renders inline in that paragraph.
+- Images and other binaries cannot live in the repository for docs. Use absolute `https://` image URLs, each on its own line with blank lines around it; an image directly after a line of text renders inline in that paragraph. To move repository images (or images on a site being retired) into the team's media library and rewrite the pages, use `scripts/images.mjs` (see "Images" in `porting.md`).
 
 ## `_sections.json` (optional, in the docs folder root)
 

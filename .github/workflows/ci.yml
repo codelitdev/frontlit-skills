@@ -30,6 +30,12 @@ jobs:
       - name: frontlit-docs checker
         run: node plugins/frontlit/skills/frontlit-docs/scripts/check.test.mjs
 
+      - name: frontlit-docs port converter
+        run: node plugins/frontlit/skills/frontlit-docs/scripts/port.test.mjs
+
+      - name: frontlit-docs image mover
+        run: node plugins/frontlit/skills/frontlit-docs/scripts/images.test.mjs
+
       - name: frontlit-pages authoring helpers
         run: node plugins/frontlit/skills/frontlit-pages/scripts/authoring-helpers.test.mjs
 

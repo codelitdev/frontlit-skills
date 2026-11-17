@@ -5,14 +5,21 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-const check = join(dirname(fileURLToPath(import.meta.url)), "check.mjs");
+const self = fileURLToPath(import.meta.url);
+const check = join(dirname(self), "check.mjs");
+// The suite runs twice: with the built-in rules (--no-parser), then with FrontLit's parser.
+// Every page must get the same verdict from both; message wording is only checked for the
+// built-in rules.
+const withParser = process.env.CHECK_WITH_PARSER === "1";
+const builtin = !withParser;
 
 function run(pages, extra = []) {
   const dir = mkdtempSync(join(tmpdir(), "frontlit-docs-check-"));
   mkdirSync(join(dir, "docs"));
   for (const [name, body] of Object.entries(pages))
     writeFileSync(join(dir, "docs", name), `---\ntitle: T\n---\n\n${body}\n`);
-  const r = spawnSync("node", [check, join(dir, "docs"), ...extra], { encoding: "utf8" });
+  const mode = withParser ? [] : ["--no-parser"];
+  const r = spawnSync("node", [check, join(dir, "docs"), ...mode, ...extra], { encoding: "utf8" });
   return { ok: r.status === 0, text: r.stdout + r.stderr };
 }
 
@@ -96,7 +103,12 @@ pnpm add x
 \`\`\`ts title="app.ts"
 const a = <Foo bar />;
 \`\`\``;
-let r = run({ "a.md": valid, "b.md": "Target." });
+let r = run({ "a.md": "x" });
+if (withParser && r.text.includes("parser is unavailable")) {
+  console.log(`Skipped the FrontLit parser run: ${r.text.split("\n")[0]}`);
+  process.exit(0);
+}
+r = run({ "a.md": valid, "b.md": "Target." });
 assert.ok(r.ok, r.text);
 
 // A code fence may be indented inside a list item; its content (here `<name>`) stays literal.
@@ -105,14 +117,14 @@ assert.ok(r.ok, r.text);
 
 // A deeper-indented fence line inside a fence is content, so the fence stays open until its real close.
 r = run({ "a.md": "```markdown\n1. Run:\n\n    ```bash\n    deploy\n    ```\n```\n\nAfter <the fence>." });
-assert.ok(!r.ok && r.text.includes("<the fence>"), r.text);
+assert.ok(!r.ok && (!builtin || r.text.includes("<the fence>")), r.text);
 r = run({ "a.md": "```markdown\n1. Run:\n\n    ```bash\n    deploy <name>\n    ```\n```" });
 assert.ok(r.ok, r.text);
 
 // In a plain Markdown page, four spaces outside a list start indented code: a fence-like line
 // there is literal and does not hide the following prose, and Markdown examples in it are not checked.
 r = run({ "a.md": "Example:\n\n    ```\n\n<div>outside</div>\n\n```\nx\n```" });
-assert.ok(!r.ok && r.text.includes("<div>"), r.text);
+assert.ok(!r.ok && (!builtin || r.text.includes("<div>")), r.text);
 r = run({ "a.md": "Write lists like this:\n\n    - 1. text\n    <Foo>\n\nDone." });
 assert.ok(r.ok, r.text);
 // Inside a list item the same indentation is a fence, so its content is literal.
@@ -173,4 +185,54 @@ assert.ok(!r.ok);
 r = run({ "a.md": "[Upload](/docs/api-reference/upload)" }, ["--api-mount=api-reference"]);
 assert.ok(r.ok, r.text);
 
-console.log("check.mjs behaves as documented.");
+// Whole files at nested paths, for section, route and sidebar behaviour.
+function runFiles(files, extra = []) {
+  const dir = mkdtempSync(join(tmpdir(), "frontlit-docs-check-"));
+  for (const [name, text] of Object.entries(files)) {
+    mkdirSync(dirname(join(dir, "docs", name)), { recursive: true });
+    writeFileSync(join(dir, "docs", name), text);
+  }
+  const mode = withParser ? [] : ["--no-parser"];
+  const r = spawnSync("node", [check, join(dir, "docs"), ...mode, ...extra], { encoding: "utf8" });
+  return { ok: r.status === 0, text: r.stdout + r.stderr };
+}
+const page = (title, extra = "") => `---\ntitle: ${title}\n${extra}---\n\nBody.\n`;
+
+// The sidebar: _sections.json orders sections, nav_order orders pages, nested folders stay
+// in their first-level section, drafts are listed but hidden, and repeated labels in one
+// section are a warning (not a failure).
+r = runFiles(
+  {
+    "_sections.json": '{ "version": 1, "sections": [{ "folder": "guides", "name": "Guides", "order": 2 }, { "folder": "old", "name": "Old docs", "order": 9 }] }',
+    "index.md": page("Home"),
+    "guides/b.md": page("Second", "nav_order: 20\n"),
+    "guides/a.md": page("First", "nav_order: 10\n"),
+    "guides/hidden.md": page("Hidden", "published: false\n"),
+    "old/x/intro.md": page("Introduction", "nav_order: 1\n"),
+    "old/y/intro.md": page("Introduction", "nav_order: 2\n"),
+  },
+  ["--tree"],
+);
+assert.ok(r.ok, r.text);
+assert.match(r.text, /Sidebar: 5 public doc\(s\), 1 draft\(s\) hidden/);
+assert.ok(r.text.indexOf("Guides  [guides") < r.text.indexOf("Old docs  [old"), r.text);
+assert.ok(r.text.indexOf("First  →") < r.text.indexOf("Second  →"), r.text);
+assert.match(r.text, /\(draft\) Hidden/);
+assert.match(r.text, /DUPLICATE_NAV_LABEL/);
+assert.match(r.text, /\/docs\/old\/y\/intro/);
+assert.match(r.text, /OK: 6 file\(s\), 5 public doc\(s\)/);
+
+// Only published pages compete for a route; folders differing only in case collide.
+r = runFiles({ "a.md": page("A", "slug: same\n"), "b.md": page("B", "slug: same\npublished: false\n") });
+assert.ok(r.ok, r.text);
+r = runFiles({ "a.md": page("A", "slug: same\n"), "b.md": page("B", "slug: same\n") });
+assert.ok(!r.ok && r.text.includes("DUPLICATE_ROUTE"), r.text);
+r = runFiles({ "Guides/a.md": page("A"), "guides/b.md": page("B") });
+assert.ok(!r.ok && r.text.includes("SECTION_COLLISION"), r.text);
+
+console.log(`check.mjs behaves as documented (${withParser ? "FrontLit's parser" : "built-in rules"}).`);
+if (builtin) {
+  const again = spawnSync("node", [self], { encoding: "utf8", env: { ...process.env, CHECK_WITH_PARSER: "1" } });
+  process.stdout.write(again.stdout + again.stderr);
+  process.exit(again.status ?? 1);
+}
