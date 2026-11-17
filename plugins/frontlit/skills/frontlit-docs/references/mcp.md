@@ -46,7 +46,7 @@ Check `publishable` and diagnostics including `blocksSave` / `blocksPublish`. A 
 
 1. Resolve the PR's current head SHA; a newer user commit may have replaced the head previously checked.
 2. Use `list_documentation_github_checks` and `get_documentation_github_check` for FrontLit's docs check status. Diagnostic text may be redacted; retrieve available GitHub check annotations for file/line details when needed.
-3. Fix the reported cause and check the rest of the changed files for the same issue. The importer may stop at its first error.
+3. Fix the reported cause and check the rest of the changed files for the same issue; `check.mjs` reports every broken page at once with the same parser. Older FrontLit versions stop at the first broken page.
 4. After pushing, wait for the new head's docs validation result. If it has not appeared or completed, say it is pending; a passing pages preview is not a passing docs check.
 
 ## Connect only when needed

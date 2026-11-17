@@ -2,6 +2,28 @@
 
 Goal: same content, same order, same URLs, valid FrontLit Markdown. Change syntax, not wording. FrontLit supports Fumadocs-style rich blocks natively (see `format.md`), so a Fumadocs port keeps most components as they are. MediaLit's port is the reference: [`frontlit/docs`](https://github.com/codelitdev/medialit/tree/main/frontlit/docs) in `codelitdev/medialit`.
 
+## Automated conversion
+
+`scripts/port.mjs` (next to `check.mjs`, Node 18+, no dependencies) does the mechanical part of the tables below. It reads the source as data and never runs it: JS/TS navigation configs (`sidebars.js`, `_meta.ts`, `.vitepress/config.*`) are read statically, and when one is built by code it falls back to folders and frontmatter positions and says so.
+
+```bash
+node <path-to-this-skill>/scripts/port.mjs <source-content-dir> <target-docs-dir> \
+  [--from=auto|docusaurus|mintlify|nextra|fumadocs|vitepress|gitbook|markdown] \
+  [--prefix=legacy] [--assets-base=https://old-docs.example.com/] [--old-base=docs] [--dry-run] [--json]
+```
+
+- Start with `--dry-run` to see the page map, sections, redirects and review list without writing anything.
+- `--prefix=<path>` puts every page under `<target>/<path>/…` with `slug: <path>/<old path>` (one sidebar section; see "Keeping an older version alongside the new docs"). Without it, each navigation group becomes a section folder and the old URL is kept with `slug` where the file path differs.
+- `--assets-base` rewrites relative and root-relative images to absolute URLs on the old site. Without it, each such image is listed for upload.
+- `--old-base` is the URL path the old site served the docs under (`docs` for Docusaurus by default, empty otherwise); it is used for the redirect map and to resolve absolute links.
+- It writes the pages, merges `_sections.json` (keeping existing sections), and writes `port-redirects.json` (old URL → new route) in the target's parent folder. It exits 0 even when there are review items, 2 on usage errors.
+
+It converts: frontmatter (title, falling back to the leading H1, which is removed; `description`; `sidebar_position`/`position`/`order` → `nav_order`, as group index × 1000 + position; `sidebar_label`/`sidebarTitle`/navigation labels → `nav_title`, prefixed with the group when a label repeats in one section; `draft`/`hidden` → `published: false`; other keys dropped); `.mdx` → `.md`; import/export lines and comments; `:::` admonitions, `> [!NOTE]` alerts, `<Note>`-style and `<Callout type>` components and GitBook hints → `<Callout>`; Docusaurus/Mintlify/Nextra/GitBook tabs → `<Tabs items>`/`<Tab value>`; Mintlify `<Step title>` and Nextra heading steps → `<Step>` with a `###` heading; `<CardGroup>`/`<Card>`, `<AccordionGroup>`, `<details><summary>`, `<CodeGroup>` and VitePress `::: code-group`/`::: details`; `<img>`, `<br>`, `<a>`, `<b>`, headings and simple wrappers (`<div>`, `<p>`, `<Frame>`) → Markdown; embeds → links; nested list markers, task lists, empty links, badge links, table alignment, bold inline code and prose generics such as `Array<string>`; code fence meta (keeps `title="…"`, turns Mintlify/VitePress tab labels into titles); and internal links → `/docs/<slug>#anchor` using the page map.
+
+It deliberately does not: rewrite prose, invent replacements for widgets, convert `<ParamField>`, `<ResponseField>`, file trees, Mermaid or other unknown components (they stay in place so the checker flags them), inline imported partials, turn `npm2yarn` into a `<CodeGroup>`, port OpenAPI-generated pages, or upload images.
+
+Afterwards, work through the **Needs review** list (unknown components and expressions, images to upload or check, links it could not resolve, URLs that changed, pages missing from the source navigation, nav configs it could not read), run `check.mjs`, and read every converted page against the original before opening the pull request. Then continue with the tables below for anything left.
+
 ## Navigation → sections
 
 | Source | Where navigation lives | FrontLit |
@@ -96,7 +118,23 @@ Paths on the site's own domain can instead be redirected with `redirects` in `si
 - Rewrite internal links to `/docs/<new-slug>` (with `#anchor` where present) and confirm each target exists in the port.
 - Anchors may change. Fumadocs, Docusaurus and GitHub turn every space into a hyphen, so `## Upload flow (drafts + sealing)` is `#upload-flow-drafts--sealing`. FrontLit turns each run of spaces into one hyphen: `#upload-flow-drafts-sealing`. Fix such links (the checker reports them as `BROKEN_ANCHOR`), and list in the PR any old anchors that change, because external links to them will open at the top of the page.
 - Links to generated pages you skipped (e.g. API reference): point to their current live URL as an absolute `https://` link.
-- Images in the repo (`/images/x.png`, `./img.png`, `/screenshots/x.png`): FrontLit cannot publish repo binaries (a local image path fails with `UNMANAGED_BINARY`). Use the image's current public `https://` URL from the live site. If none exists, upload it to the team's FrontLit media library (MediaLit) when asked and you have access, else keep the alt text as a sentence and list the image in the PR description for the user to upload. Prefer stable, unsigned URLs.
+- Images in the repo (`/images/x.png`, `./img.png`, `/screenshots/x.png`): FrontLit cannot publish repo binaries (a local image path fails with `UNMANAGED_BINARY`). Pointing at the old site's copies (`port.mjs --assets-base`) works only while that site stays up, and the check lists them as `EXTERNAL_MEDIA`. To move them into the team's media library, see "Images" below. Prefer stable, unsigned URLs.
+
+## Images
+
+`scripts/images.mjs` finds every image the docs use that isn't a stable absolute `https` URL yet: relative and root-relative paths, `http://` URLs, and URLs on a host you are retiring. It uploads each file once to the team's media library and rewrites the references (never inside code blocks).
+
+```bash
+# Plan only: lists what would move and any file it can't find.
+node <path-to-this-skill>/scripts/images.mjs <docs-folder> --assets=<old-site>/static [--from-host=old-docs.example.com]
+# Move them: needs an API key for the FrontLit team.
+FRONTLIT_API_KEY=… node <path-to-this-skill>/scripts/images.mjs <docs-folder> --assets=<old-site>/static [--from-host=…] --upload
+```
+
+- `--assets` (repeatable) is where root-relative paths such as `/img/x.png` live, usually the old site's `static/` or `public/` folder; relative paths resolve against the page first.
+- `--from-host` (repeatable) moves images that already have https URLs on a site that is going away, so the docs don't break when it does.
+- Uploading adds files to the team's media library, so run `--upload` only when the user asked for it and gave you an API key (FrontLit → Settings → API keys). Never write the key into a file.
+- Uploads are recorded in `.frontlit-images.json` beside the docs folder (content hash → URL); commit it so a rerun doesn't upload twice. Then run `check.mjs` again.
 
 ## Keeping an older version alongside the new docs
 
@@ -110,12 +148,12 @@ To publish an earlier version of the docs next to the current one (for example u
 
 ## Diagnosing a failed remote check
 
-An error that stops a document from importing (`INVALID_DOCUMENT`, `UNSUPPORTED_NODE`, `UNSAFE_URL`) fails the whole check (`0 public docs`) and hides the remaining problems, so fixing one can reveal the next; expect several rounds even when the local checker passes. Such an error may come with no file or line.
+An error that stops a document from importing (`INVALID_DOCUMENT`, `UNSUPPORTED_NODE`, `UNSAFE_URL`) fails the whole check (`0 public docs`). Depending on the FrontLit version, the check lists every broken page or stops at the first one, and an annotation may point at line 1 (or be missing) when the problem was found after conversion.
 
-1. Read the check's annotations on the exact head commit (`gh api repos/<owner>/<repo>/check-runs/<id>/annotations`).
-2. With no annotation, bisect: on a throwaway branch and draft pull request, remove half of the pages, push and read the summary (a result with a non-zero page count means the parser got through the remaining pages). Narrow to one file, then to the construct. Delete the throwaway branches afterwards.
-3. Compare the offending file with the rules in `format.md`; typical causes are an empty link, an image inside a link, or a list item that starts with another list marker.
-4. Add the construct to your conversion checklist and search the rest of the folder for it.
+1. Run `check.mjs` locally first. It uses the same parser, so it reproduces import errors with every broken page at once; if it printed "FrontLit's parser is unavailable", fix that (network, npm) before going further, because the built-in rules miss some failures.
+2. Read the check's annotations on the exact head commit (`gh api repos/<owner>/<repo>/check-runs/<id>/annotations`).
+3. If the remote check fails on something the local run passes, the server's parser is newer than the published package. Narrow it down locally: copy the folder, delete half of the pages and rerun with `--parser=<dir>` pointing at a current FrontLit checkout's build if you have one; otherwise report the page and the check summary to the user. Don't push throwaway branches or pull requests to a shared repository to bisect without asking.
+4. Compare the offending file with the rules in `format.md`; typical causes are an empty link, an image inside a link, or a list item that starts with another list marker. Search the rest of the folder for the same construct.
 
 `EXTERNAL_MEDIA` in the summary is informational: it lists images served from another site. It does not fail the check, but those images stop rendering if the other site goes away, so list them in the pull request.
 
@@ -124,4 +162,4 @@ An error that stops a document from importing (`INVALID_DOCUMENT`, `UNSUPPORTED_
 - Generated pages and how they were handled (API reference spec path and URL path, or skipped), with their current URLs.
 - Widgets removed, and tabs or components that could not be kept, per page.
 - URLs that could not be kept, old → new.
-- Images that need uploading.
+- Images that need uploading, or that were moved with `images.mjs`.

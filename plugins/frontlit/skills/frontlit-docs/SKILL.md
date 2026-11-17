@@ -39,7 +39,7 @@ MCP is optional for ordinary repository edits: use the bundled checker and PR va
 
 1. **Inventory.** Find the source docs (content folder, navigation config such as `meta.json`, `sidebars.js`, `mint.json`, `docs.json`, `_meta.json`, `SUMMARY.md`). Record every page with its current URL, title, description and nav position. Identify the framework and every custom component in use (`grep -ho "<[A-Z][A-Za-z]*" -r <content>` lists them).
 2. **Plan.** Map navigation groups to sections (folders + `_sections.json`), and map each page to a target path and `slug`. Keep current URLs where possible: set `slug` to the old path relative to `/docs`. Note generated pages (API references from OpenAPI, changelogs built from code) that have no source file; skip them and report them.
-3. **Convert** each page using `references/porting.md`. Change syntax only; keep the author's wording, examples and order. Keep supported rich blocks (Callout, Tabs, Steps, Cards, Accordions, CodeGroup, TypeTable) as they are; rename `.mdx` to `.md`. Never invent content to replace a widget; link to it or state what was removed.
+3. **Convert** each page using `references/porting.md`; `scripts/port.mjs` does the mechanical part (frontmatter, navigation, admonitions, tabs and other components, links, redirects) and lists what needs a human. Then move images that aren't absolute https URLs with `scripts/images.mjs` ("Images" in `porting.md`). Change syntax only; keep the author's wording, examples and order. Keep supported rich blocks (Callout, Tabs, Steps, Cards, Accordions, CodeGroup, TypeTable) as they are; rename `.mdx` to `.md`. Never invent content to replace a widget; link to it or state what was removed.
 4. **API reference.** If the source generates one from OpenAPI, do not port its pages: point FrontLit at the committed spec instead (`references/porting.md`, "API reference"). It publishes the whole spec, so tell the user.
 5. **Do not modify or delete the old docs site.** The user retires it after checking the result. Then, when asked, follow "Redirects and retiring the old site" in `references/porting.md`, in separate pull requests.
 6. Validate (step 3), then open one pull request containing all pages and `_sections.json`.
@@ -47,15 +47,19 @@ MCP is optional for ordinary repository edits: use the bundled checker and PR va
 ## 3. Validate before opening the pull request
 
 - If connected FrontLit MCP exposes `validate_documentation`, use its unsaved-document mode for changed document bodies and fix the returned diagnostics; see `references/mcp.md`. This complements the file checker; it does not validate Git YAML frontmatter or the complete candidate manifest.
-- Run the checker bundled with this skill (Node 18+) for file/frontmatter, route and cross-file checks. It is `scripts/check.mjs` in the folder that contains this `SKILL.md`; run it from the repository root:
+- Run the checker bundled with this skill (Node 18+, npm). It is `scripts/check.mjs` in the folder that contains this `SKILL.md`; run it from the repository root:
 
   ```bash
-  node <path-to-this-skill>/scripts/check.mjs <docs-folder> [--api-mount=<url-path>]
+  node <path-to-this-skill>/scripts/check.mjs <docs-folder> [--api-mount=<url-path>] [--tree]
   ```
+
+  It parses every page with FrontLit's own Markdown parser (the `@frontlit/text-editor` package the pull request check runs), which npm installs into a cache on the first run (about 100 MB; refreshed daily). So a page it accepts is a page FrontLit accepts, as of the latest published parser. Around that it checks what spans pages: sections, duplicate routes, broken internal links and anchors. When the parser can't be installed (offline, no npm) it says so and falls back to built-in rules that catch only the common failures; `--no-parser` forces that mode, `--parser=<dir>` loads the package from another `node_modules` (a local FrontLit build).
 
   If the site has an API reference, pass its URL path (e.g. `--api-mount=api`). Links under `/docs/<url-path>/` are generated pages, so the checker skips them instead of reporting them as broken.
 
-  The checker catches the common failures (unknown components and bad component props or nesting, HTML, unsupported Markdown, bad frontmatter, invalid slugs, duplicate routes, broken internal links and anchors). It is a pre-check, not the authority: the `FrontLit / docs validation` check on the pull request is final. If it fails, read its annotations (and available MCP check reports), fix every reported issue and push to the same branch. Recheck the current PR head after the new remote result completes; a local pass alone does not establish remote success. The remote check stops at the first error and can fail without a file or line; see "Diagnosing a failed remote check" in `references/porting.md`.
+  `--tree` prints the sidebar FrontLit will build: sections in order, each section's pages by `nav_order` (deeper folders don't nest; a section is one flat list), drafts marked, and each page's route. Read it after a port or a reorganisation. Warnings (repeated labels in one section, a configured section without public pages) don't fail the run but are worth fixing. The closing line gives the number of public docs, which should match the count in the pull request check's summary.
+
+  A diagnostic without a line number came from FrontLit's final structure check; the checker then lists lines its built-in rules suspect ("Possible cause"). The pull request check stays final: if it fails, read its annotations (and available MCP check reports), fix every reported issue and push to the same branch. Recheck the current PR head after the new remote result completes; a local pass alone does not establish remote success. See "Diagnosing a failed remote check" in `references/porting.md`.
 - If the repository's CI formats or lints Markdown (Prettier, markdownlint), run it on the new files, then run the checker again, because formatters rewrite Markdown.
 
 ## 4. Pull request
