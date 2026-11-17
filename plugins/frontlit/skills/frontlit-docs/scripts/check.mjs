@@ -1,14 +1,30 @@
 #!/usr/bin/env node
-// Pre-check a FrontLit docs folder: node check.mjs [docs-folder] [--api-mount=api-reference]
+// Pre-check a FrontLit docs folder:
+//   node check.mjs [docs-folder] [--api-mount=api-reference] [--tree] [--no-parser] [--parser=<dir>]
 // --api-mount: URL path of the generated API reference; links under /docs/<mount>/ are not checked.
-// Mirrors the common FrontLit validation failures. FrontLit's own pull request
-// check is authoritative; this catches problems before pushing. No dependencies.
-import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+// --tree:      print the sidebar FrontLit will build (sections, order, labels, drafts).
+// --no-parser: skip FrontLit's parser and use only the built-in rules (offline).
+// --parser:    a directory whose node_modules has @frontlit/text-editor (e.g. a local build).
+//
+// Each page is parsed with FrontLit's own Markdown parser (@frontlit/text-editor/docs,
+// the code the pull request check runs), installed once into a cache with npm. When it
+// can't be loaded, built-in rules that mirror the common failures run instead. Cross-page
+// checks (routes, sections, links, anchors) always run here. FrontLit's pull request
+// check stays authoritative.
+import { readFileSync, readdirSync, statSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { join, relative, sep, dirname } from "node:path";
+import { homedir } from "node:os";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const problems = [];
+const warnings = [];
+let buffer = null; // per-page built-in findings while FrontLit's parser is the authority
 const report = (file, line, code, message) =>
-  problems.push(`${file}${line ? `:${line}` : ""}  ${code}  ${message}`);
+  (buffer ?? problems).push({ file, line, code, message });
+const warn = (file, line, code, message) => warnings.push({ file, line, code, message });
+const format = (p) => `${p.file}${p.line ? `:${p.line}` : ""}  ${p.code}  ${p.message}`;
 
 function findDocsFolder(root) {
   const stack = [root];
@@ -26,12 +42,79 @@ function findDocsFolder(root) {
 }
 
 const args = process.argv.slice(2);
-const apiMount = (args.find((a) => a.startsWith("--api-mount="))?.split("=")[1] ?? "").replace(/^\/?(docs\/)?|\/$/g, "");
+const option = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+const apiMount = (option("api-mount") ?? "").replace(/^\/?(docs\/)?|\/$/g, "");
+const showTree = args.includes("--tree");
 const folder = args.find((a) => !a.startsWith("--")) ?? findDocsFolder(process.cwd());
 if (!folder || !existsSync(folder)) {
-  console.error("Docs folder not found. Pass it: node check.mjs <docs-folder> [--api-mount=api-reference]");
+  console.error("Docs folder not found. Pass it: node check.mjs <docs-folder> [--api-mount=api-reference] [--tree]");
   process.exit(2);
 }
+
+// FrontLit's parser: --parser=<dir>, else the latest published version in a cache
+// (refreshed at most daily; FRONTLIT_PARSER_CACHE overrides the location).
+const PACKAGE = "@frontlit/text-editor";
+async function importFrom(dir) {
+  const require = createRequire(join(dir, "noop.js"));
+  const entry = require.resolve(`${PACKAGE}/docs`);
+  let version = "unknown";
+  for (let d = dirname(entry); d !== dirname(d); d = dirname(d)) {
+    const manifest = join(d, "package.json");
+    if (!existsSync(manifest)) continue;
+    const pkg = JSON.parse(readFileSync(manifest, "utf8"));
+    if (pkg.name === PACKAGE) {
+      version = pkg.version;
+      break;
+    }
+  }
+  return { docs: await import(pathToFileURL(entry).href), version };
+}
+async function loadParser() {
+  if (args.includes("--no-parser")) return { reason: "--no-parser" };
+  const local = option("parser");
+  if (local) {
+    try {
+      return await importFrom(local);
+    } catch (error) {
+      console.error(`Can't load ${PACKAGE} from ${local}: ${error.message}`);
+      process.exit(2);
+    }
+  }
+  const cache =
+    process.env.FRONTLIT_PARSER_CACHE ??
+    join(process.env.XDG_CACHE_HOME ?? join(homedir(), ".cache"), "frontlit-docs-check");
+  const stamp = join(cache, ".updated");
+  const fresh = existsSync(stamp) && Date.now() - statSync(stamp).mtimeMs < 24 * 3600 * 1000;
+  let installError;
+  if (!fresh) {
+    try {
+      mkdirSync(cache, { recursive: true });
+      if (!existsSync(join(cache, "package.json")))
+        writeFileSync(join(cache, "package.json"), '{ "private": true }\n');
+      console.error(`Updating FrontLit's parser (${PACKAGE}) in ${cache}…`);
+      execFileSync(
+        "npm",
+        ["install", "--no-audit", "--no-fund", "--loglevel=error", `${PACKAGE}@latest`],
+        { cwd: cache, stdio: ["ignore", "ignore", "pipe"], timeout: 300_000, shell: process.platform === "win32" },
+      );
+      writeFileSync(stamp, new Date().toISOString());
+    } catch (error) {
+      installError = String(error.stderr || error.message).trim().split("\n")[0];
+    }
+  }
+  try {
+    return await importFrom(cache);
+  } catch (error) {
+    return { reason: installError ?? error.message };
+  }
+}
+const parser = await loadParser();
+if (parser.docs) console.log(`Parsing with FrontLit's parser (${PACKAGE} ${parser.version}).`);
+else
+  console.log(
+    `FrontLit's parser is unavailable (${parser.reason}); using the built-in rules, which catch the common failures only.`,
+  );
+const { docs } = parser;
 
 const SLUG = /^[a-z0-9-]+(?:\/[a-z0-9-]+)*$/;
 
@@ -65,6 +148,7 @@ const files = [];
 
 // _sections.json
 const sectionsPath = join(folder, "_sections.json");
+let configuredSections = [];
 if (existsSync(sectionsPath)) {
   try {
     const data = JSON.parse(readFileSync(sectionsPath, "utf8"));
@@ -81,6 +165,7 @@ if (existsSync(sectionsPath)) {
       if (!Number.isInteger(s.order)) throw new Error(`Order for "${s.folder}" must be an integer.`);
       seen.add(s.folder);
     }
+    configuredSections = data.sections;
   } catch (error) {
     report("_sections.json", 0, "INVALID_SECTIONS", error.message);
   }
@@ -134,9 +219,11 @@ function frontmatter(raw, file) {
 
 const pages = [];
 const routes = new Map();
+const sectionFolders = new Map(); // section slug → folder name, as FrontLit derives sections
 for (const path of files) {
   const file = relative(folder, path).split(sep).join("/");
   const raw = readFileSync(path, "utf8");
+  if (docs) buffer = [];
   if (Buffer.byteLength(raw) > 1024 * 1024) report(file, 0, "CANDIDATE_LIMIT", "Page exceeds 1 MB.");
   const { meta, body, offset } = frontmatter(raw, file);
   if (typeof meta.title !== "string" || !meta.title.trim())
@@ -150,20 +237,18 @@ for (const path of files) {
     if (meta[key] !== undefined && typeof meta[key] !== "boolean")
       report(file, 1, "INVALID_FRONTMATTER", `${key} must be true or false.`);
   const segments = file.split("/");
-  if (segments.length > 1 && !/^[a-z0-9-]+$/.test(segments[0]))
-    report(file, 0, "INVALID_SECTION", `Folder "${segments[0]}" must use lowercase letters, digits and hyphens.`);
-  const slug = String(meta.slug ?? file.slice(0, -3).replace(/\/index$/, ""))
+  const section = segments.length > 1 ? segments[0].toLowerCase() : null;
+  if (section && !/^[a-z0-9-]+$/.test(section))
+    report(file, 0, "INVALID_SECTION", `Folder "${segments[0]}" must use letters, digits and hyphens.`);
+  let slug = String(meta.slug ?? file.slice(0, -3).replace(/\/index$/, ""))
     .toLowerCase()
     .replace(/\/$/, "");
   if (!SLUG.test(slug))
     report(file, 1, "INVALID_SLUG", `"${slug}" must be lowercase letters, digits and hyphens in /-separated segments (set slug: or rename the file).`);
   else if (["collections", "search"].includes(slug.split("/")[0]))
     report(file, 1, "RESERVED_ROUTE", `/docs/${slug} is reserved.`);
-  if (routes.has(slug))
-    report(file, 0, "DUPLICATE_ROUTE", `/docs/${slug} is also used by ${routes.get(slug)}.`);
-  routes.set(slug, file);
 
-  const ids = new Set();
+  let ids = new Set();
   const links = [];
   const stack = [];
   let fence = null;
@@ -301,7 +386,55 @@ for (const path of files) {
   if (pending) report(file, pending.line, "UNSUPPORTED_NODE", `<${pending.name}> tag is never closed.`);
   for (const name of stack) report(file, 0, "UNSUPPORTED_NODE", `<${name}> is never closed.`);
   if (fence) report(file, 0, "UNSUPPORTED_NODE", "A code fence is never closed.");
-  pages.push({ file, slug, ids, links });
+
+  // FrontLit's parser decides whether the page itself is valid; the built-in findings
+  // only serve as hints when its diagnostic has no line.
+  let fm = meta;
+  if (docs) {
+    const hints = buffer.filter((h) => h.line);
+    buffer = null;
+    try {
+      const parsed = docs.parseDocsMarkdown(raw, { file });
+      fm = parsed.frontmatter ?? {};
+      ids = new Set(docs.extractDocsHeadings(parsed.content).map((h) => h.id));
+      slug = docs.resolveDocsSourcePath(`docs/${file}`, "docs", fm.slug).slug;
+    } catch (error) {
+      if (!(error instanceof docs.DocsContentError)) report(file, 0, "PARSER_ERROR", error.message);
+      else {
+        let hinted = false;
+        for (const d of error.diagnostics) {
+          const onSlug = d.fieldPath === "slug";
+          report(file, d.line ?? (onSlug ? 1 : 0), d.code, `${d.message}${!d.line && d.fieldPath && !onSlug ? ` (at ${d.fieldPath})` : ""}`);
+          if (!d.line && !onSlug && !hinted) {
+            hinted = true;
+            for (const h of hints) report(file, h.line, h.code, `Possible cause: ${h.message}`);
+          }
+        }
+      }
+    }
+  }
+  const published = fm.published !== false;
+  if (published) {
+    if (routes.has(slug))
+      report(file, 0, "DUPLICATE_ROUTE", `/docs/${slug} is also used by ${routes.get(slug)}.`);
+    else routes.set(slug, file);
+  }
+  if (section) {
+    const previous = sectionFolders.get(section);
+    if (previous && previous !== segments[0])
+      report(file, 0, "SECTION_COLLISION", `Folders "${previous}" and "${segments[0]}" resolve to the same section.`);
+    else sectionFolders.set(section, segments[0]);
+  }
+  pages.push({
+    file,
+    slug,
+    ids,
+    links,
+    section,
+    published,
+    label: String(fm.nav_title ?? fm.title ?? file),
+    order: Number.isInteger(fm.nav_order) ? fm.nav_order : 0,
+  });
 }
 
 const bySlug = new Map(pages.map((p) => [p.slug, p]));
@@ -330,9 +463,50 @@ for (const page of pages)
       report(page.file, line, "BROKEN_ANCHOR", `No heading "#${anchor}" on /docs/${slug}.`);
   }
 
+// The sidebar as FrontLit builds it: sections come from first-level folders in path
+// order, then _sections.json renames and reorders them; pages sort by nav_order, then
+// path. Deeper folders don't nest, so every page of a section is one flat list.
+const byName = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const sections = [...sectionFolders].map(([slug, name], order) => ({ slug, name, order }));
+for (const s of configuredSections) {
+  const entry = { slug: s.folder, name: s.name, order: s.order, configured: true };
+  const index = sections.findIndex((x) => x.slug === s.folder);
+  if (index < 0) sections.push(entry);
+  else sections[index] = entry;
+}
+sections.sort((a, b) => a.order - b.order || byName(a.slug, b.slug));
+const groups = [{ slug: null, name: "(top level)" }, ...sections].map((s) => ({
+  ...s,
+  pages: pages.filter((p) => p.section === s.slug).sort((a, b) => a.order - b.order || byName(a.file, b.file)),
+}));
+for (const group of groups) {
+  const shown = group.pages.filter((p) => p.published);
+  const seen = new Map();
+  for (const page of shown) {
+    if (seen.has(page.label))
+      warn(page.file, 0, "DUPLICATE_NAV_LABEL", `"${page.label}" also labels ${seen.get(page.label)} in the same sidebar section; set a distinct nav_title.`);
+    else seen.set(page.label, page.file);
+  }
+  if (group.configured && !shown.length)
+    warn("_sections.json", 0, "EMPTY_SECTION", `Section "${group.slug}" has no public pages.`);
+}
+
+if (showTree) {
+  const drafts = pages.length - routes.size;
+  console.log(`\nSidebar: ${routes.size} public doc(s)${drafts ? `, ${drafts} draft(s) hidden` : ""}`);
+  for (const group of groups) {
+    if (!group.pages.length && group.slug === null) continue;
+    console.log(group.slug === null ? "\n(top level)" : `\n${group.name}  [${group.slug}, order ${group.order}${group.configured ? "" : ", not in _sections.json"}]`);
+    for (const page of group.pages)
+      console.log(`  ${String(page.order).padStart(6)}  ${page.published ? "" : "(draft) "}${page.label}  →  /docs/${page.slug}`);
+  }
+  console.log("");
+}
+
+if (warnings.length) console.log(`${warnings.map(format).join("\n")}\n${warnings.length} warning(s).\n`);
 if (problems.length) {
-  console.log(problems.join("\n"));
+  console.log(problems.map(format).join("\n"));
   console.log(`\n${problems.length} problem(s) in ${files.length} file(s).`);
   process.exit(1);
 }
-console.log(`OK: ${files.length} file(s), ${routes.size} route(s).`);
+console.log(`OK: ${files.length} file(s), ${routes.size} public doc(s).`);
