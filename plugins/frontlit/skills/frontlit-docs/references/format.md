@@ -49,7 +49,7 @@ YAML between `---` lines at the top of every file.
 ```markdown
 ---
 title: Upload a file
-description: Send your first file to MediaLit from the CLI, cURL or Node.js.
+description: Send your first file to Acme from the CLI, cURL or Node.js.
 slug: quick-start
 nav_order: 20
 ---
@@ -111,18 +111,18 @@ Callouts hold **any** blocks, including [links](/docs/setup).
 <CodeGroup>
 
 ```bash title="npm"
-npm install medialit
+npm install acme
 ```
 
 ```bash title="pnpm"
-pnpm add medialit
+pnpm add acme
 ```
 
 </CodeGroup>
 
 <TypeTable
   type={{
-    apiKey: { type: "string", default: "MEDIALIT_API_KEY", description: "Your app's key." },
+    apiKey: { type: "string", default: "ACME_API_KEY", description: "Your app's key." },
     access: { type: '"public" | "private"', required: true },
   }}
 />

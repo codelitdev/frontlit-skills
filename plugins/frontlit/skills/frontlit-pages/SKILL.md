@@ -93,7 +93,7 @@ If the FrontLit MCP server is connected, get the real branding from it instead o
 
 ## Pages not in Git
 
-If the repository isn't connected for pages, work in the visual builder and follow `references/builder.md`; blocks, writing, design and embeds guidance is the same. If the FrontLit MCP server is connected, the same applies through its tools: `list_pages`, `get_page`, `create_page`, `update_page` (writes the draft only), `publish_page`. Differences: rich text there is TipTap JSON instead of Markdown, and media are uploaded MediaLit objects. Only call `publish_page` or `delete_page` when the user asks. If a tool answers that the page is managed in GitHub, switch to the files.
+If the repository isn't connected for pages, work in the visual builder and follow `references/builder.md`; blocks, writing, design and embeds guidance is the same. If the FrontLit MCP server is connected, the same applies through its tools: `list_pages`, `get_page`, `create_page`, `update_page` (writes the draft only), `publish_page`. Differences: rich text there is TipTap JSON instead of Markdown, and images are media library items. Only call `publish_page` or `delete_page` when the user asks. If a tool answers that the page is managed in GitHub, switch to the files.
 
 ## Rules
 
