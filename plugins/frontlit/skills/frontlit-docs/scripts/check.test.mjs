@@ -230,6 +230,22 @@ assert.ok(!r.ok && r.text.includes("DUPLICATE_ROUTE"), r.text);
 r = runFiles({ "Guides/a.md": page("A"), "guides/b.md": page("B") });
 assert.ok(!r.ok && r.text.includes("SECTION_COLLISION"), r.text);
 
+// --redirects: every /docs/ target must be a public page with the heading it names.
+{
+  const mapDir = mkdtempSync(join(tmpdir(), "frontlit-docs-map-"));
+  const map = join(mapDir, "port-redirects.json");
+  const files = { "a.md": page("A"), "b.md": page("B", "published: false\n"), "c.md": "---\ntitle: C\n---\n\n## Setup\n" };
+  writeFileSync(map, JSON.stringify({ "/a": "/docs/a", "/c": "/docs/c#setup", "/home": "/", "/api/x": "/docs/api/x" }));
+  r = runFiles(files, [`--redirects=${map}`, "--api-mount=api"]);
+  assert.ok(r.ok, r.text);
+  writeFileSync(map, JSON.stringify({ "/b": "/docs/b", "/gone": "/docs/missing", "/c": "/docs/c#install" }));
+  r = runFiles(files, [`--redirects=${map}`]);
+  assert.ok(!r.ok, r.text);
+  assert.match(r.text, /REDIRECT_TARGET_MISSING {2}\/b → \/docs\/b: that page is a draft/);
+  assert.match(r.text, /REDIRECT_TARGET_MISSING {2}\/gone → \/docs\/missing: no page has that route/);
+  assert.match(r.text, /BROKEN_ANCHOR {2}\/c → \/docs\/c#install/);
+}
+
 console.log(`check.mjs behaves as documented (${withParser ? "FrontLit's parser" : "built-in rules"}).`);
 if (builtin) {
   const again = spawnSync("node", [self], { encoding: "utf8", env: { ...process.env, CHECK_WITH_PARSER: "1" } });

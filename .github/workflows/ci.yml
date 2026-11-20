@@ -36,6 +36,12 @@ jobs:
       - name: frontlit-docs image mover
         run: node plugins/frontlit/skills/frontlit-docs/scripts/images.test.mjs
 
+      - name: frontlit-docs redirect planner
+        run: node plugins/frontlit/skills/frontlit-docs/scripts/redirects.test.mjs
+
+      - name: frontlit-docs OpenAPI preflight
+        run: node plugins/frontlit/skills/frontlit-docs/scripts/openapi.test.mjs
+
       - name: frontlit-pages authoring helpers
         run: node plugins/frontlit/skills/frontlit-pages/scripts/authoring-helpers.test.mjs
 

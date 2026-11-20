@@ -71,6 +71,8 @@ if (opts.assetsBase) {
 }
 
 // ---------------------------------------------------------------- report
+// redirects: old URL → new route for the pages whose URL changes. port-redirects.json holds
+// every page (unchanged ones too), so redirects.mjs can choose a path prefix for the old host.
 const report = { framework: "", navigation: "", pages: [], sections: [], redirects: {}, review: [], notes: [] };
 const review = (file, kind, detail) => {
   if (!report.review.some((r) => r.file === file && r.kind === kind && r.detail === detail)) report.review.push({ file, kind, detail });
@@ -1098,7 +1100,8 @@ if (!opts.dryRun) {
     writeFileSync(out, p.content);
   }
   if (sections.length) writeFileSync(sectionsPath, `${JSON.stringify({ version: 1, sections }, null, 2)}\n`);
-  if (Object.keys(report.redirects).length) writeFileSync(redirectsPath, `${JSON.stringify(report.redirects, null, 2)}\n`);
+  const urlMap = Object.fromEntries(report.pages.map((r) => [r.oldUrl, r.route]));
+  if (report.pages.length) writeFileSync(redirectsPath, `${JSON.stringify(urlMap, null, 2)}\n`);
 }
 
 if (opts.json) console.log(JSON.stringify(report, null, 2));
@@ -1107,7 +1110,7 @@ else {
   for (const r of report.pages) lines.push(`  ${r.source} → ${r.target}   ${r.oldUrl} → ${r.route}`);
   lines.push("", `Sections: ${sections.map((s) => `${s.folder} (${s.name}, ${s.order})`).join(", ") || "none"}`);
   const redirects = Object.entries(report.redirects);
-  lines.push("", `Redirects (${redirects.length})${redirects.length && !opts.dryRun ? `, written to ${redirectsPath}` : ""}:`);
+  lines.push("", `Changed URLs (${redirects.length})${report.pages.length && !opts.dryRun ? `; every old URL → new route is in ${redirectsPath} (plan redirects with redirects.mjs)` : ""}:`);
   for (const [from, to] of redirects) lines.push(`  ${from} → ${to}`);
   if (report.notes.length) lines.push("", "Notes:", ...report.notes.map((n) => `  ${n}`));
   lines.push("", `Needs review (${report.review.length}):`);

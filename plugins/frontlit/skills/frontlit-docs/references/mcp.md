@@ -15,8 +15,12 @@ Do not change ownership, pause sync, grant capabilities or connect/disconnect a 
 The API reference is configured on the Git connection, separate from the docs folder. Discover the exact tool names and schemas first (they mirror the REST operations `getApiReference`, `previewApiReference`, `updateApiReference`).
 
 - Get status: the saved spec path and URL path, the live reference, and the latest failed import with diagnostics (`OPENAPI_NOT_FOUND`, `OPENAPI_PARSE`, `OPENAPI_INVALID`, `OPENAPI_UNSUPPORTED`, `OPENAPI_LIMIT`, `OPENAPI_DUPLICATE_OPERATION`, `ROUTE_COLLISION`).
-- Preview: dry-runs the import on the connected branch's head, so the spec must already be committed and pushed there. It reports the operation pages that would publish and any problems. Use it before saving.
+- Preview: dry-runs the import on the connected branch's head, so the spec must already be committed and pushed there. It reports the operation pages that would publish and any problems. Use it before saving. To check a spec before it is pushed, run `scripts/openapi.mjs` locally (`porting.md`, "API reference").
 - Update: saves the spec path and URL path and syncs immediately; a null spec path unpublishes the API reference. This changes the live site and makes the whole spec public, so only call it when the user asked for it.
+
+## Redirect domains
+
+`add_redirect_domain` (hostname, `pathPrefix`), `update_redirect_domain` (`pathPrefix`, `rules`), `verify_redirect_domain` and `remove_redirect_domain` manage an old host that redirects to the site; `get_domain_settings` lists the current ones with the DNS records to create. `scripts/redirects.mjs --json` prints the prefix and rules for a port. Adding or changing one affects live traffic once DNS points at FrontLit, so only call them when the user asked; the DNS records are the user's to create.
 
 ## Validate unsaved content
 

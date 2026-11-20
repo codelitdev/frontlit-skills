@@ -13,6 +13,7 @@ Read these as needed:
 - `references/mcp.md`: current tools for source ownership, unsaved-document validation, Git check reports, connection and scopes. Read when using MCP or diagnosing a remote validation failure.
 - `references/porting.md`: the conversion table for other docs frameworks, how to keep an older version of the docs alongside the new one, and how to diagnose a failed remote check. Read when porting or when the remote check fails.
 - `references/writing.md`: how to write pages that work for readers, search and AI answers.
+- `references/from-code.md`: writing docs that don't exist yet from the product's source code: inventory, splitting the work, checking claims, reporting bugs. Read before documenting a product or feature from its code.
 
 ## Choose Git or MCP
 
@@ -31,17 +32,17 @@ MCP is optional for ordinary repository edits: use the bundled checker and PR va
 
 ## 2a. Writing or editing docs
 
-1. Read the existing pages in the folder and `_sections.json` to match structure, tone and section names.
+1. Read the existing pages in the folder and `_sections.json` to match structure, tone and section names. If the pages don't exist yet and the code is the source, follow `references/from-code.md`: agree on the gap list with the user first, check every claim against the code, and report bugs you find instead of documenting them.
 2. Write or edit `.md` files following `references/format.md` and `references/writing.md`.
 3. Validate (step 3), then commit on a new branch and open a pull request against the connected branch.
 
 ## 2b. Porting an existing docs site
 
 1. **Inventory.** Find the source docs (content folder, navigation config such as `meta.json`, `sidebars.js`, `mint.json`, `docs.json`, `_meta.json`, `SUMMARY.md`). Record every page with its current URL, title, description and nav position. Identify the framework and every custom component in use (`grep -ho "<[A-Z][A-Za-z]*" -r <content>` lists them).
-2. **Plan.** Map navigation groups to sections (folders + `_sections.json`), and map each page to a target path and `slug`. Keep current URLs where possible: set `slug` to the old path relative to `/docs`. Note generated pages (API references from OpenAPI, changelogs built from code) that have no source file; skip them and report them.
+2. **Plan.** Map navigation groups to sections (folders + `_sections.json`), and map each page to a target path and `slug`. Keep current URLs where possible: set `slug` to the old path relative to `/docs`. Note generated pages (API references from OpenAPI, changelogs built from code) that have no source file; skip them and report them. Note the old host (e.g. `docs.example.com`) and the path it served the docs under: the redirect plan in step 5 needs them.
 3. **Convert** each page using `references/porting.md`; `scripts/port.mjs` does the mechanical part (frontmatter, navigation, admonitions, tabs and other components, links, redirects) and lists what needs a human. Then move images that aren't absolute https URLs with `scripts/images.mjs` ("Images" in `porting.md`). Change syntax only; keep the author's wording, examples and order. Keep supported rich blocks (Callout, Tabs, Steps, Cards, Accordions, CodeGroup, TypeTable) as they are; rename `.mdx` to `.md`. Never invent content to replace a widget; link to it or state what was removed.
-4. **API reference.** If the source generates one from OpenAPI, do not port its pages: point FrontLit at the committed spec instead (`references/porting.md`, "API reference"). It publishes the whole spec, so tell the user.
-5. **Do not modify or delete the old docs site.** The user retires it after checking the result. Then, when asked, follow "Redirects and retiring the old site" in `references/porting.md`, in separate pull requests.
+4. **API reference.** If the source generates one from OpenAPI, do not port its pages: point FrontLit at the committed spec instead (`references/porting.md`, "API reference"). Check the spec first with `scripts/openapi.mjs <spec> --mount=<url-path> --routes`: it reports what FrontLit would refuse and the gaps to fix before anyone relies on the reference (missing `operationId`s, authentication "Try it" can't send, CORS with `--cors-origin`). It publishes the whole spec, so tell the user.
+5. **Plan the redirects; do not modify or delete the old docs site.** Old links must keep working. `scripts/redirects.mjs <port-redirects.json> --host=<old-host>` prints the redirect-domain setup (path prefix plus a rule per renamed page); put it in the pull request description, and check every target with `check.mjs --redirects=<map>`. Setting it up and retiring the old site happen after the user has checked the result, when asked: "Redirects and retiring the old site" in `references/porting.md`, in separate pull requests.
 6. Validate (step 3), then open one pull request containing all pages and `_sections.json`.
 
 ## 3. Validate before opening the pull request
@@ -50,12 +51,14 @@ MCP is optional for ordinary repository edits: use the bundled checker and PR va
 - Run the checker bundled with this skill (Node 18+, npm). It is `scripts/check.mjs` in the folder that contains this `SKILL.md`; run it from the repository root:
 
   ```bash
-  node <path-to-this-skill>/scripts/check.mjs <docs-folder> [--api-mount=<url-path>] [--tree]
+  node <path-to-this-skill>/scripts/check.mjs <docs-folder> [--api-mount=<url-path>] [--tree] [--redirects=<map.json>]
   ```
 
   It parses every page with FrontLit's own Markdown parser (the `@frontlit/text-editor` package the pull request check runs), which npm installs into a cache on the first run (about 100 MB; refreshed daily). So a page it accepts is a page FrontLit accepts, as of the latest published parser. Around that it checks what spans pages: sections, duplicate routes, broken internal links and anchors. When the parser can't be installed (offline, no npm) it says so and falls back to built-in rules that catch only the common failures; `--no-parser` forces that mode, `--parser=<dir>` loads the package from another `node_modules` (a local FrontLit build).
 
   If the site has an API reference, pass its URL path (e.g. `--api-mount=api`). Links under `/docs/<url-path>/` are generated pages, so the checker skips them instead of reporting them as broken.
+
+  `--redirects` checks that every `/docs/` target in a redirect map (`port-redirects.json`) is a public page and every `#anchor` a heading on it.
 
   `--tree` prints the sidebar FrontLit will build: sections in order, each section's pages by `nav_order` (deeper folders don't nest; a section is one flat list), drafts marked, and each page's route. Read it after a port or a reorganisation. Warnings (repeated labels in one section, a configured section without public pages) don't fail the run but are worth fixing. The closing line gives the number of public docs, which should match the count in the pull request check's summary.
 
@@ -67,5 +70,5 @@ MCP is optional for ordinary repository edits: use the bundled checker and PR va
 - Branch name: `docs/<short-topic>`; target the connected publishing branch.
 - Open it with `gh pr create` if the GitHub CLI is available; otherwise push the branch and give the user the GitHub compare link to open it.
 - Title: what changed, e.g. `Port docs from Fumadocs to FrontLit` or `Add webhooks guide`.
-- Description: pages added/changed, sections, anything skipped or simplified (generated pages, removed widgets, components that could not be kept), the API reference spec path and URL path if used, and URLs that changed.
+- Description: pages added/changed, sections, anything skipped or simplified (generated pages, removed widgets, components that could not be kept), the API reference spec path and URL path if used, URLs that changed and the redirect plan for the old host, and any bugs found while writing (`references/from-code.md`).
 - Remind the user that merging publishes the pages, and that `published: false` pages are merged but stay private drafts.
