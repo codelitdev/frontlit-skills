@@ -1,6 +1,6 @@
 # Porting from other docs frameworks
 
-Goal: same content, same order, same URLs, valid FrontLit Markdown. Change syntax, not wording. FrontLit supports Fumadocs-style rich blocks natively (see `format.md`), so a Fumadocs port keeps most components as they are. MediaLit's port is the reference: [`frontlit/docs`](https://github.com/codelitdev/medialit/tree/main/frontlit/docs) in `codelitdev/medialit`.
+Goal: same content, same order, same URLs, valid FrontLit Markdown. Change syntax, not wording. FrontLit supports Fumadocs-style rich blocks natively (see `format.md`), so a Fumadocs port keeps most components as they are.
 
 ## Automated conversion
 

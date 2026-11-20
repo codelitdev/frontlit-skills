@@ -71,7 +71,7 @@ const metadata = (fields) =>
     .map(([k, v]) => `${k} ${Buffer.from(v).toString("base64")}`)
     .join(",");
 
-/** TUS upload straight to the media store; resolves to the uploaded file's MediaLit id. */
+/** TUS upload straight to the media store; resolves to the uploaded file's id. */
 export async function tusUpload({ endpoint, signature, bytes, fileName, mimeType }) {
   const base = { "Tus-Resumable": "1.0.0", "x-medialit-signature": signature };
   let res = await fetch(`${endpoint.replace(/\/$/, "")}/media/create/resumable`, {
