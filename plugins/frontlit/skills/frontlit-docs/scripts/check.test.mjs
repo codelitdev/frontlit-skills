@@ -12,13 +12,17 @@ const check = join(dirname(self), "check.mjs");
 // built-in rules.
 const withParser = process.env.CHECK_WITH_PARSER === "1";
 const builtin = !withParser;
+// FRONTLIT_PARSER_DIR runs the parser half against a local @frontlit/text-editor build
+// (e.g. packages/text-editor in a FrontLit checkout) instead of the published one.
+const parserMode = () =>
+  withParser ? (process.env.FRONTLIT_PARSER_DIR ? [`--parser=${process.env.FRONTLIT_PARSER_DIR}`] : []) : ["--no-parser"];
 
 function run(pages, extra = []) {
   const dir = mkdtempSync(join(tmpdir(), "frontlit-docs-check-"));
   mkdirSync(join(dir, "docs"));
   for (const [name, body] of Object.entries(pages))
     writeFileSync(join(dir, "docs", name), `---\ntitle: T\n---\n\n${body}\n`);
-  const mode = withParser ? [] : ["--no-parser"];
+  const mode = parserMode();
   const r = spawnSync("node", [check, join(dir, "docs"), ...mode, ...extra], { encoding: "utf8" });
   return { ok: r.status === 0, text: r.stdout + r.stderr };
 }
@@ -192,7 +196,7 @@ function runFiles(files, extra = []) {
     mkdirSync(dirname(join(dir, "docs", name)), { recursive: true });
     writeFileSync(join(dir, "docs", name), text);
   }
-  const mode = withParser ? [] : ["--no-parser"];
+  const mode = parserMode();
   const r = spawnSync("node", [check, join(dir, "docs"), ...mode, ...extra], { encoding: "utf8" });
   return { ok: r.status === 0, text: r.stdout + r.stderr };
 }
@@ -244,6 +248,64 @@ assert.ok(!r.ok && r.text.includes("SECTION_COLLISION"), r.text);
   assert.match(r.text, /REDIRECT_TARGET_MISSING {2}\/b → \/docs\/b: that page is a draft/);
   assert.match(r.text, /REDIRECT_TARGET_MISSING {2}\/gone → \/docs\/missing: no page has that route/);
   assert.match(r.text, /BROKEN_ANCHOR {2}\/c → \/docs\/c#install/);
+}
+
+// Blocks added in FrontLit #211: Button, WebPreview, H5P, success callouts, Tabs items
+// checks, and props a block needs before it can be published (INCOMPLETE_BLOCK). A
+// published parser older than that rejects them all, so its run skips this part.
+r = run({ "a.md": '<Button label="Go" href="/docs/a" />' });
+if (withParser && !r.ok) console.log("Skipped the #211 block checks: the installed FrontLit parser predates them.");
+else {
+  const blocks = {
+    'Button': '<Button label="Start the course" href="/courses/intro" />',
+    'Button variant, mailto and anchor links': '<Button label="Mail" href="mailto:hi@example.com" variant="secondary" />\n\n<Button label="Down" href="#setup" variant="primary" />',
+    'Button label as a literal expression': '<Button label={"Go"} href="https://example.com" />',
+    'WebPreview': '<WebPreview url="https://example.com/guide" title="The guide" description="Everything in one place." image="https://example.com/a.png" />',
+    'WebPreview with only a url': '<WebPreview url="http://example.com" />',
+    'H5P on h5p.org': '<H5P src="https://h5p.org/h5p/embed/712" title="Drag the words" height={600} />',
+    'H5P on a *.h5p.com subdomain': '<H5P src="https://acme.h5p.com/content/1/embed" />',
+    'success callout': '<Callout type="success" title="Done">\n\nIt worked.\n\n</Callout>',
+    'link blocks inside a callout': '<Callout>\n\n<Button label="Go" href="/docs/a" />\n\n</Callout>',
+    'Tab values listed in items': '<Tabs items={["npm", "bun"]}>\n\n<Tab value="npm">\n\nx\n\n</Tab>\n\n<Tab>\n\ny\n\n</Tab>\n\n</Tabs>',
+  };
+  for (const [name, body] of Object.entries(blocks)) {
+    r = run({ "a.md": body });
+    assert.ok(r.ok, `${name} should pass\n${r.text}`);
+  }
+  const broken = {
+    'Button without label': ['<Button href="/x" />', "INVALID_DOCUMENT"],
+    'Button without href': ['<Button label="Go" />', "INCOMPLETE_BLOCK"],
+    'Button with an empty label': ['<Button label="" href="/x" />', "INCOMPLETE_BLOCK"],
+    'Button variant': ['<Button label="Go" href="/x" variant="ghost" />', "UNSUPPORTED_ATTRIBUTE"],
+    'Button unsafe href': ['<Button label="Go" href="javascript:alert(1)" />', "UNSAFE_URL"],
+    'Button expiring href': ['<Button label="Go" href="https://example.com/a?token=1" />', "UNSAFE_URL"],
+    'Button with children': ['<Button label="Go" href="/x">\n\nbody\n\n</Button>', "UNSUPPORTED_NODE"],
+    'Button unknown prop': ['<Button label="Go" href="/x" size="lg" />', "UNSUPPORTED_ATTRIBUTE"],
+    'inline Button': ['Click <Button label="Go" href="/x" /> here.', "UNSUPPORTED_NODE"],
+    'Button inside Steps': ['<Steps>\n\n<Button label="Go" href="/x" />\n\n</Steps>', "UNSUPPORTED_NODE"],
+    'WebPreview without url': ['<WebPreview title="x" />', "INCOMPLETE_BLOCK"],
+    'WebPreview relative url': ['<WebPreview url="/docs/a" />', "UNSAFE_URL"],
+    'WebPreview http image': ['<WebPreview url="https://example.com" image="http://example.com/a.png" />', "UNSAFE_URL"],
+    'H5P without src': ['<H5P />', "INCOMPLETE_BLOCK"],
+    'H5P on another host': ['<H5P src="https://example.com/h5p/1" />', "UNSAFE_URL"],
+    'H5P on bare h5p.com': ['<H5P src="https://h5p.com/x" />', "UNSAFE_URL"],
+    'H5P over http': ['<H5P src="http://h5p.org/h5p/embed/1" />', "UNSAFE_URL"],
+    'H5P height too small': ['<H5P src="https://h5p.org/h5p/embed/1" height={50} />', "UNSUPPORTED_ATTRIBUTE"],
+    'H5P height as a string': ['<H5P src="https://h5p.org/h5p/embed/1" height="600" />', "UNSUPPORTED_ATTRIBUTE"],
+    'H5P fractional height': ['<H5P src="https://h5p.org/h5p/embed/1" height={600.5} />', "UNSUPPORTED_ATTRIBUTE"],
+    'Tab value not in items': ['<Tabs items={["a", "b"]}>\n\n<Tab value="c">\n\nx\n\n</Tab>\n\n</Tabs>', "INVALID_DOCUMENT"],
+    'Tabs items not a list': ['<Tabs items="a">\n\n<Tab value="a">\n\nx\n\n</Tab>\n\n</Tabs>', "UNSUPPORTED_ATTRIBUTE"],
+    'Tabs items with a number': ['<Tabs items={["a", 1]}>\n\n<Tab value="a">\n\nx\n\n</Tab>\n\n</Tabs>', "UNSUPPORTED_ATTRIBUTE"],
+    'Card with an empty title': ['<Cards>\n\n<Card title="" />\n\n</Cards>', "INCOMPLETE_BLOCK"],
+    'Card unsafe href': ['<Cards>\n\n<Card title="x" href="javascript:x" />\n\n</Cards>', "UNSAFE_URL"],
+    'Accordion with an empty title': ['<Accordions>\n\n<Accordion title="">\n\nx\n\n</Accordion>\n\n</Accordions>', "INCOMPLETE_BLOCK"],
+    'signed image URL': ["![x](https://example.com/a.png?X-Amz-Signature=1)", "UNSAFE_URL"],
+    'private attachment link': ["[x](https://example.com/attachments/a)", "UNSAFE_URL"],
+  };
+  for (const [name, [body, code]] of Object.entries(broken)) {
+    r = run({ "a.md": body });
+    assert.ok(!r.ok && r.text.includes(code), `${name} should fail with ${code}\n${r.text}`);
+  }
 }
 
 console.log(`check.mjs behaves as documented (${withParser ? "FrontLit's parser" : "built-in rules"}).`);
