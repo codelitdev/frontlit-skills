@@ -21,7 +21,7 @@ FrontLit pages are read by people, found through search, and split into chunks b
 - Every code block should run as written. Show expected output when it helps.
 - Name things exactly as they appear in the product UI, CLI and API.
 - Put warnings right before the step they apply to, as a `<Callout type="warning">` (or `> **Warning:** …` for plain Markdown).
-- Use `<Steps>` for sequences, `<Tabs>` for alternatives the reader picks between (languages, frameworks) and `<CodeGroup>` for the same code in several package managers. Don't use them for layout.
+- Use `<Steps>` for sequences, `<Tabs>` for alternatives the reader picks between (languages, frameworks) and `<CodeGroup>` for the same code in several package managers. Don't use them for layout. Use `<Button>` for the one next action on a page (not for every link), and `<WebPreview>` to point to an outside page worth a visual card.
 - Prefer tables for options and parameters; lists for sequences.
 - Link to the page that explains a concept instead of re-explaining it.
 

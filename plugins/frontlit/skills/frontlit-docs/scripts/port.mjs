@@ -19,13 +19,13 @@ const SUPPORTED = ["Callout", "Tabs", "Tab", "Steps", "Step", "Cards", "Card", "
 // Admonition/callout type → FrontLit Callout type.
 const CALLOUT_TYPE = {
   note: "note", tip: "tip", info: "info", warning: "warning", danger: "danger",
-  warn: "warning", caution: "warning", important: "info", success: "tip", check: "tip",
+  warn: "warning", caution: "warning", important: "info", success: "success", check: "success",
   idea: "tip", error: "danger", secondary: "note", default: "info",
 };
 // Mintlify/Nextra/Fumadocs callout components → Callout type.
 const CALLOUT_TAGS = {
-  Note: "note", Tip: "tip", Info: "info", Warning: "warning", Danger: "danger", Check: "tip",
-  Success: "tip", Caution: "warning", Important: "info", Error: "danger",
+  Note: "note", Tip: "tip", Info: "info", Warning: "warning", Danger: "danger", Check: "success",
+  Success: "success", Caution: "warning", Important: "info", Error: "danger",
 };
 const GENERIC_CALLOUTS = ["Callout", "Admonition", "Aside"]; // take a type="…" prop
 const CONTAINER_ALIASES = { CardGroup: "Cards", Columns: "Cards", "Cards.Card": "Card", AccordionGroup: "Accordions", TabItem: "Tab", "Tabs.Tab": "Tab", RequestExample: "CodeGroup", ResponseExample: "CodeGroup" };

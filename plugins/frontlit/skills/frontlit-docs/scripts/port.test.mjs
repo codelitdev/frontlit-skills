@@ -106,7 +106,7 @@ function tree(files) {
   assert.ok(!/^slug:/m.test(code), "slug is omitted when the file path already gives the old URL");
   assert.match(code, /<CodeGroup>\n\n```bash title="npm"\nnpm install acme\n```\n\n```bash title="pnpm"/);
   assert.match(code, /<Tabs items=\{\["Node\.js","cURL"\]\}>\n\n<Tab value="Node\.js">\n\nUse the SDK\./);
-  assert.match(code, /<Callout type="tip">\n\nAll set\./, "Check → tip");
+  assert.match(code, /<Callout type="success">\n\nAll set\./, "Check → success");
   assert.match(code, /<Callout type="danger" title="Limits">/, "Callout type error → danger");
   // The nested "Media" group is flattened into Essentials.
   const images = r.read("essentials/images.md");
@@ -216,7 +216,7 @@ function tree(files) {
   assert.match(r.text, /Framework: gitbook; navigation from SUMMARY\.md/);
   assert.match(r.read("index.md"), /\[https:\/\/video\.example\/v\/1\]\(https:\/\/video\.example\/v\/1\)/);
   const setup = r.read("basics/setup.md");
-  assert.match(setup, /<Callout type="tip">\n\nDone\./);
+  assert.match(setup, /<Callout type="success">\n\nDone\./);
   assert.match(setup, /<Tabs items=\{\["macOS","Linux"\]\}>\n\n<Tab value="macOS">\n\nUse brew\./);
   checks(r.target);
 }

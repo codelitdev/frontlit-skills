@@ -80,15 +80,15 @@ Code fence language: `[A-Za-z0-9_+-]` only (`bash`, `ts`, `json`). Use `bash` fo
 
 ## Rich blocks
 
-Eleven MDX-style tags are supported. Props must be string literals or literal values (`items={["npm", "pnpm"]}`); a page that uses any of them is parsed with MDX rules.
+Fourteen MDX-style tags are supported (FrontLit publishes the full list as `https://<your-site>/schema/content.v1.json`). Props must be string literals or literal values (`items={["npm", "pnpm"]}`); a page that uses any of them is parsed with MDX rules.
 
 - Put every tag on its own line, with a **blank line** after each opening tag and before each closing tag, so Markdown inside is parsed as Markdown. Indentation inside a component is layout only, not an indented code block.
 - Any other capitalised tag is an error (`Unknown component <Foo>`), as are spread props and non-literal expressions.
 
 | Component | Props | Children |
 | --- | --- | --- |
-| `<Callout>` | `type`: `note`, `tip`, `info`, `warning`, `danger` (default info); `title` | Any blocks |
-| `<Tabs>` | `items`: list of strings (optional) | One or more `<Tab>` |
+| `<Callout>` | `type`: `note`, `tip`, `info`, `success`, `warning`, `danger` (default info); `title` | Any blocks |
+| `<Tabs>` | `items`: list of string literals (optional), e.g. `items={["npm", "bun"]}` | One or more `<Tab>` |
 | `<Tab>` | `value`: label. Must be in `items` when `items` is set; without `value`, the Nth `items` entry is used | Any blocks |
 | `<Steps>` | none | One or more `<Step>` |
 | `<Step>` | none | Any blocks, usually starting with a `###` heading |
@@ -98,6 +98,11 @@ Eleven MDX-style tags are supported. Props must be string literals or literal va
 | `<Accordion>` | `title` (required) | Any blocks |
 | `<CodeGroup>` | none | **Only** fenced code blocks; each fence's `title` is its tab label |
 | `<TypeTable>` | `type={{ name: { type: "string", default: "x", description: "…", required: true } }}`; self-closing, no children | none |
+| `<Button>` | `label` (required); `href` (required: https, http, mailto or a site path such as `/docs/slug`); `variant`: `primary` (default) or `secondary` | none (self-closing) |
+| `<WebPreview>` | `url` (required, http or https); `title` (default: the link's host name); `description`; `image` (https) | none (self-closing) |
+| `<H5P>` | `src` (required): the activity's https embed URL on `h5p.org` or a `*.h5p.com` subdomain; `title` (accessible frame title); `height`: whole pixels from 100 to 4000, written `height={600}` (default 480) | none (self-closing) |
+
+A required prop left empty (`title=""`, a `<Button>` without `href`, a `<WebPreview>` without `url`, an `<H5P>` without `src`) renders nothing, so FrontLit refuses to publish the page (`INCOMPLETE_BLOCK`). Link-shaped blocks sit on their own lines like the others: `<Button>` inside a sentence is an error.
 
 `<TypeTable>` fields: `type` is required and a string; `default` and `description` are strings; `required` is a boolean. Anything else (numbers or objects for `default`, other keys) fails. Write non-string defaults as strings (`default: "10"`).
 
@@ -120,6 +125,12 @@ pnpm add acme
 
 </CodeGroup>
 
+<Button label="Start the tutorial" href="/docs/tutorial" />
+
+<WebPreview url="https://example.com/blog/launch" title="Launch post" description="What changed in 2.0." />
+
+<H5P src="https://h5p.org/h5p/embed/712" title="Check your understanding" />
+
 <TypeTable
   type={{
     apiKey: { type: "string", default: "ACME_API_KEY", description: "Your app's key." },
@@ -136,6 +147,7 @@ Rich blocks can't be nested inside inline text, and a block quote starting `> **
 - Anchors: `/docs/<slug>#<heading-id>`. A heading ID is the heading text lowercased, with everything except letters, digits, spaces, `_` and `-` removed, and each run of spaces turned into one hyphen: `Upload flow (drafts + sealing)` → `upload-flow-drafts-sealing`. Repeated headings get `-2`, `-3`.
 - Every internal link and anchor must resolve to a page in this pull request or already published. Broken links block publication.
 - External links: `https://`, `http://`, `mailto:`.
+- Never link or embed private attachment paths (`/attachments/`, `/private/`, …) or expiring signed URLs (`?X-Amz-Signature=`, `?token=`, `?expires=` …); they fail with `UNSAFE_URL`.
 
 ## Size limits
 
