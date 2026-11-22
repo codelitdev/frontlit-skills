@@ -23,7 +23,7 @@ Branding saves directly to team settings, outside page drafts and Git releases. 
 | Branding for the local preview | `get_team_settings({})` only (read-only); copy `title`, `subtitle` and `logo.url` into the gitignored `preview.context.json` (see `SKILL.md` step 3). Never call `update_team_settings` for this. |
 | Read a builder-owned page | `list_pages` to find its ID, then `get_page({"pageId": "…"})`. Read the existing full layout before changing it. |
 | Change a builder-owned page's SEO | `update_page` accepts `title`, `description` and `robotsAllowed` and saves the page draft. It does not accept `socialImage`; use the builder for that field. `name` is the internal page name, not website branding. See `seo.md`. |
-| Change builder-owned page blocks | `update_page` with the page ID and revised layout. Rich text uses TipTap JSON here; Git page JSON uses Markdown. |
+| Change builder-owned page blocks | `update_page` with the page ID and revised layout. Rich text uses TipTap JSON here; Git page JSON uses Markdown. Either way it holds basic formatting only (see the Rich text rule in `format.md`). |
 | Publish a page | `publish_page({"pageId": "…"})` only when the user asked to publish. For Git-managed pages, use the repository/PR workflow instead. |
 | Inspect docs Git failures | `list_documentation_github_checks` / `get_documentation_github_check`; these reports concern docs and may redact diagnostic prose. Use available GitHub annotations for missing details. |
 | Verify docs Git publication | `get_documentation_github`; compare `binding.observedSha`, `validatedSha` and `liveSha`. A validated commit is not necessarily live. These fields describe docs sync; use pages preview/release status for landing pages. |
