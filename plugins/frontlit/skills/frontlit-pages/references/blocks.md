@@ -56,7 +56,7 @@ Text with media: one feature explained in depth. Alternate `alignment` (`left` |
 
 ## rich-text
 
-A run of prose without a block title: legal text, a long explanation with several parts. `text` (Markdown, `##`/`###` headings allowed, never `#`), `alignment`. A `##` inside it is a real H2. For one titled section, prefer `content` without media, so the title follows the theme's heading style. For legal pages (terms, privacy) a hero with a short title plus one rich-text block is right.
+A run of prose without a block title: legal text, a long explanation with several parts. `text` (basic Markdown: `##` to `####` headings, lists, quotes, code blocks, links; never `#`, tables or images), `alignment`. A `##` inside it is a real H2. For one titled section, prefer `content` without media, so the title follows the theme's heading style. For legal pages (terms, privacy) a hero with a short title plus one rich-text block is right.
 
 ## media
 
