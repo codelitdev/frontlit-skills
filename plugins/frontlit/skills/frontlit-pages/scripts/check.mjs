@@ -174,6 +174,8 @@ function walk(schema, value, path, visit) {
 }
 
 const isMarkdown = (s) => typeof s?.description === "string" && s.description.startsWith("Markdown");
+// Block rich text (FrontLit's page text format): basic formatting only.
+const isPageText = (s) => typeof s?.description === "string" && s.description.startsWith("Markdown: paragraphs");
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // --- Canonical form ------------------------------------------------------
@@ -291,6 +293,36 @@ function markdownProblems(text) {
   return out;
 }
 
+// What page block rich text also refuses: it has no tables, images or
+// headings outside ## to ####. Media and embeds are page blocks.
+function pageTextProblems(text) {
+  const out = [];
+  let fence = null;
+  for (const line of text.split(/\r?\n/)) {
+    const open = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+    if (fence) {
+      if (open && open[1][0] === fence[0] && open[1].length >= fence.length) fence = null;
+      continue;
+    }
+    if (open) {
+      fence = open[1];
+      continue;
+    }
+    const prose = line.replace(/(`+)[\s\S]*?\1/g, "``");
+    if (
+      /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/.test(line) ||
+      /^\s*\|[\s:|-]*-[\s:|-]*\|\s*$/.test(line)
+    )
+      out.push("Tables are unsupported in block rich text.");
+    if (/(?<!\\)!\[[^\]]*\]\(/.test(prose))
+      out.push("Images are unsupported in block rich text; use a Media block.");
+    const heading = line.match(/^\s{0,3}(#{1,6})\s/);
+    if (heading && (heading[1].length === 1 || heading[1].length > 4))
+      out.push(`Heading level ${heading[1].length} is unsupported in block rich text; use ## to ####.`);
+  }
+  return out;
+}
+
 const PLACEHOLDER = /\bTODO\b|\bTBD\b|lorem ipsum|\[placeholder/i;
 function checkStrings(file, schema, value) {
   walk(schema, value, [], (s, v, path) => {
@@ -304,11 +336,12 @@ function checkStrings(file, schema, value) {
 function checkMarkdown(file, schema, value) {
   walk(schema, value, [], (s, v, path) => {
     if (!isMarkdown(s) || typeof v !== "string") return;
-    for (const message of new Set(markdownProblems(v))) error(file, ptr(path), "UNSUPPORTED_MARKDOWN", message);
+    const problems = [...markdownProblems(v), ...(isPageText(s) ? pageTextProblems(v) : [])];
+    for (const message of new Set(problems)) error(file, ptr(path), "UNSUPPORTED_MARKDOWN", message);
     if (path[0] === "agentInstructions") {
       // FrontLit publishes it in /llms.txt under its own # title and ## Agent instructions heading.
       if (/^#{1,2}\s/m.test(v)) warn(file, ptr(path), "HEADING_LEVEL", "FrontLit adds the # title and a ## Agent instructions heading in /llms.txt; start sections at ###.");
-    } else if (/^#\s/m.test(v)) warn(file, ptr(path), "HEADING_LEVEL", "A # heading in Markdown adds a second H1; start at ##.");
+    } else if (!isPageText(s) && /^#\s/m.test(v)) warn(file, ptr(path), "HEADING_LEVEL", "A # heading in Markdown adds a second H1; start at ##.");
   });
 }
 
