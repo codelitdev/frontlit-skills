@@ -62,6 +62,7 @@ const { docs } = parser;
 const SLUG = /^[a-z0-9-]+(?:\/[a-z0-9-]+)*$/;
 
 // Rich blocks FrontLit supports: allowed props, and the container each child must sit in.
+// Mirrors FrontLit's content format (packages/text-editor/schema/content.v1.json).
 const COMPONENTS = {
   Callout: ["type", "title"],
   Tabs: ["items"],
@@ -74,9 +75,76 @@ const COMPONENTS = {
   Accordion: ["title"],
   CodeGroup: [],
   TypeTable: ["type"],
+  Button: ["label", "href", "variant"],
+  WebPreview: ["url", "title", "description", "image"],
+  H5P: ["src", "title", "height"],
 };
+const NAMES = Object.keys(COMPONENTS);
 const PARENT = { Tab: "Tabs", Step: "Steps", Card: "Cards", Accordion: "Accordions" };
-const CALLOUT_TYPES = ["note", "tip", "info", "warning", "danger"];
+const ATOMS = ["TypeTable", "Button", "WebPreview", "H5P"]; // no children
+// Props a block needs before it can be published. A missing one renders nothing, and
+// FrontLit refuses the page (INCOMPLETE_BLOCK).
+const REQUIRED = { Card: ["title"], Accordion: ["title"], Button: ["label", "href"], WebPreview: ["url"], H5P: ["src"] };
+// Props without which the page doesn't parse at all.
+const PARSE_REQUIRED = { Card: "title", Accordion: "title", Button: "label" };
+const CALLOUT_TYPES = ["note", "tip", "info", "success", "warning", "danger"];
+const BUTTON_VARIANTS = ["primary", "secondary"];
+const H5P_HOSTS = ["h5p.org", "*.h5p.com"];
+
+// FrontLit's URL rules (core/urls.ts isSafeUrl, docs/urls.ts isPublicDocsUrl): links may be
+// https, http, mailto or relative; images https only; never private attachment paths or
+// expiring signed links.
+function isSafeUrl(value, image = false) {
+  if (typeof value !== "string" || !value || value !== value.trim()) return false;
+  if (/[\u0000- \u007f\\]/.test(value) || /%(?:0[0-9a-f]|1[0-9a-f]|7f|5c)/i.test(value)) return false;
+  if (value.startsWith("//")) return false;
+  if (/^(?:https?:|mailto:)/i.test(value)) {
+    try {
+      const url = new URL(value);
+      if (image && url.protocol !== "https:") return false;
+      if (url.username || url.password) return false;
+      if (url.protocol === "mailto:") return !image && Boolean(url.pathname);
+      decodeURIComponent(url.pathname);
+      return Boolean(url.hostname);
+    } catch {
+      return false;
+    }
+  }
+  if (image || /^[^/?#]*:/.test(value) || /%(?:2f|3a)/i.test(value)) return false;
+  try {
+    decodeURIComponent(new URL(value, "https://relative.invalid/").pathname);
+    return true;
+  } catch {
+    return false;
+  }
+}
+function isPublicUrl(value) {
+  if (/^mailto:/i.test(value)) return true;
+  try {
+    const url = new URL(value, "https://docs.invalid/");
+    return (
+      !/\/(?:attachments|private|ticket-attachments|conversation-attachments)(?:\/|$)/i.test(decodeURIComponent(url.pathname)) &&
+      ![...url.searchParams.keys()].some((key) => /^(?:x-amz-.+|x-goog-.+|signature|sig|token|access_token|expires)$/i.test(key))
+    );
+  } catch {
+    return false;
+  }
+}
+const isAllowedHost = (value, hosts) =>
+  isSafeUrl(value, true) &&
+  hosts.some((rule) => {
+    const host = new URL(value).hostname.toLowerCase();
+    return rule.startsWith("*.") ? host.endsWith(rule.slice(1)) : host === rule;
+  });
+// A literal string prop: "text", 'text' or {"text"}. Anything else is undefined.
+const text = (raw) => raw?.match(/^(?:"([^"]*)"|'([^']*)'|\{\s*(?:"([^"]*)"|'([^']*)')\s*\})$/)?.slice(1).find((v) => v !== undefined);
+// items={["a", "b"]}: the strings, or null when it isn't a list of string literals.
+function stringList(raw) {
+  const body = raw?.match(/^\{\s*\[([\s\S]*)\]\s*\}$/)?.[1];
+  if (body === undefined) return null;
+  const items = [...body.matchAll(/"([^"]*)"|'([^']*)'/g)].map((m) => m[1] ?? m[2]);
+  return body.replace(/"[^"]*"|'[^']*'/g, "").replace(/[\s,]/g, "") ? null : items;
+}
 const FENCE_META = /^title=(?:"[^"\n]+"|'[^'\n]+')$/;
 const files = [];
 (function walk(dir) {
@@ -193,20 +261,21 @@ for (const path of files) {
 
   let ids = new Set();
   const links = [];
-  const stack = [];
+  const stack = []; // open tags: { name, items }
   let fence = null;
   let pending = null; // an opening tag whose props continue on later lines
   const tag = (line, closing, name, rawProps, selfClosing) => {
     if (!Object.hasOwn(COMPONENTS, name)) {
-      report(file, line, "UNSUPPORTED_NODE", `<${name}> is not a supported component (Callout, Tabs, Tab, Steps, Step, Cards, Card, Accordions, Accordion, CodeGroup, TypeTable). Use Markdown, or wrap literal text in backticks.`);
+      report(file, line, "UNSUPPORTED_NODE", `<${name}> is not a supported component (${NAMES.join(", ")}). Use Markdown, or wrap literal text in backticks.`);
       return;
     }
     if (closing) {
-      const top = stack.pop();
+      const top = stack.pop()?.name;
       if (top !== name) report(file, line, "UNSUPPORTED_NODE", `</${name}> does not match ${top ? `<${top}>` : "an open tag"}.`);
       return;
     }
-    const parent = stack[stack.length - 1];
+    const open = stack[stack.length - 1];
+    const parent = open?.name;
     if (PARENT[name] && parent !== PARENT[name])
       report(file, line, "UNSUPPORTED_NODE", `<${name}> must be directly inside <${PARENT[name]}>.`);
     const container = Object.entries(PARENT).find(([, p]) => p === parent)?.[0];
@@ -217,19 +286,52 @@ for (const path of files) {
       if (!COMPONENTS[name].includes(m[1])) report(file, line, "UNSUPPORTED_ATTRIBUTE", `<${name}> does not accept the prop "${m[1]}".`);
       props[m[1]] = m[2];
     }
-    if (name === "Callout" && props.type && !CALLOUT_TYPES.includes(props.type.slice(1, -1)))
+    const value = (prop) => text(props[prop]);
+    const url = (prop, ok, message) => {
+      const v = value(prop);
+      if (v) {
+        if (!ok(v)) report(file, line, "UNSAFE_URL", message);
+        else if (!isPublicUrl(v)) report(file, line, "UNSAFE_URL", `${name} ${prop} is a private or expiring link.`);
+      }
+    };
+    if (name === "Callout" && props.type && !CALLOUT_TYPES.includes(value("type")))
       report(file, line, "UNSUPPORTED_ATTRIBUTE", `Callout type must be one of ${CALLOUT_TYPES.join(", ")}.`);
-    if (name === "Card" && !props.title) report(file, line, "INVALID_DOCUMENT", "<Card> needs a title.");
-    if (name === "Accordion" && !props.title) report(file, line, "INVALID_DOCUMENT", "<Accordion> needs a title.");
+    const needed = PARSE_REQUIRED[name];
+    if (needed && props[needed] === undefined) report(file, line, "INVALID_DOCUMENT", `<${name}> needs a ${needed}.`);
+    for (const prop of REQUIRED[name] ?? [])
+      if (props[prop] === undefined ? prop !== needed : value(prop) === "")
+        report(file, line, "INCOMPLETE_BLOCK", `<${name}> needs ${prop} before it can be published.`);
     if (name === "TypeTable" && !props.type) report(file, line, "INVALID_DOCUMENT", "<TypeTable> needs a type={{ … }} prop.");
     if (name === "Accordions" && props.type && !/^["'](single|multiple)["']$/.test(props.type))
       report(file, line, "UNSUPPORTED_ATTRIBUTE", 'Accordions type must be "single" or "multiple".');
-    if (!selfClosing && name !== "TypeTable") stack.push(name);
+    let items;
+    if (name === "Tabs" && props.items !== undefined) {
+      items = stringList(props.items);
+      if (!items) report(file, line, "UNSUPPORTED_ATTRIBUTE", "<Tabs> items must be a list of strings.");
+    }
+    if (name === "Tab" && open?.items && props.value !== undefined && !open.items.includes(value("value")))
+      report(file, line, "INVALID_DOCUMENT", `Tab value "${value("value")}" is not listed in items.`);
+    if (name === "Card" || name === "Button") url("href", (v) => isSafeUrl(v), `${name} link URL is unsafe.`);
+    if (name === "Button" && props.variant && !BUTTON_VARIANTS.includes(value("variant")))
+      report(file, line, "UNSUPPORTED_ATTRIBUTE", `Button variant must be one of ${BUTTON_VARIANTS.join(", ")}.`);
+    if (name === "WebPreview") {
+      url("url", (v) => isSafeUrl(v) && /^https?:\/\//i.test(v), "WebPreview url must be an http or https link.");
+      url("image", (v) => isSafeUrl(v, true), "WebPreview image must be an https URL.");
+    }
+    if (name === "H5P") {
+      url("src", (v) => isAllowedHost(v, H5P_HOSTS), `H5P src must use https and one of these hosts: ${H5P_HOSTS.join(", ")}.`);
+      const height = props.height?.match(/^\{\s*(\d+)\s*\}$/)?.[1];
+      if (props.height !== undefined && !(height && +height >= 100 && +height <= 4000))
+        report(file, line, "UNSUPPORTED_ATTRIBUTE", "H5P height must be a whole number from 100 to 4000, written height={480}.");
+    }
+    if (ATOMS.includes(name)) {
+      if (!selfClosing) report(file, line, "UNSUPPORTED_NODE", `<${name}> cannot have children; close it with />.`);
+    } else if (!selfClosing) stack.push({ name, items });
   };
   // A page with rich blocks is parsed with MDX rules: indentation is layout, never an
   // indented code block. A plain Markdown page follows CommonMark: four spaces past the
   // enclosing list item's content (or the margin) start indented code, not a fence.
-  const mdx = /^\s*<(Callout|Tabs|Tab|Steps|Step|Cards|Card|Accordions|Accordion|CodeGroup|TypeTable)\b/m.test(body);
+  const mdx = new RegExp(`^\\s*<(${NAMES.join("|")})\\b`, "m").test(body);
   const lists = []; // content columns of the open list items, innermost last
   let prevBlank = true;
   let indentedCode = false;
@@ -296,12 +398,16 @@ for (const path of files) {
     for (const m of prose.matchAll(/(?<!\\)<(\/?)([A-Za-z][\w.]*)((?:\s[^<>]*?)?)(\/?)>/g)) {
       if (m[2][0] === m[2][0].toLowerCase())
         report(file, line, "UNSUPPORTED_NODE", `HTML "${m[0].slice(0, 40)}" is unsupported; use Markdown or wrap literal text in backticks.`);
-      else tag(line, m[1] === "/", m[2], m[3], m[4] === "/");
+      else {
+        if (prose.slice(0, m.index).replace(/(?<!\\)<\/?[A-Za-z][\w.]*(?:\s[^<>]*?)?\/?>/g, "").trim())
+          report(file, line, "UNSUPPORTED_NODE", `Inline <${m[2]}> is unsupported. Put the component on its own lines.`);
+        tag(line, m[1] === "/", m[2], m[3], m[4] === "/");
+      }
     }
     const stray = prose.replace(/(?<!\\)<\/?[A-Za-z][\w.]*(?:\s[^<>]*?)?\/?>/g, "").match(/(?<!\\)<\/?[A-Za-z][^>]*>?/);
     if (stray)
       report(file, line, "UNSUPPORTED_NODE", `"${stray[0].slice(0, 40)}" looks like HTML/JSX; wrap literal text in backticks or escape the "<".`);
-    if (stack[stack.length - 1] === "CodeGroup" && prose.trim() && !/^\s*<\/?CodeGroup/.test(prose))
+    if (stack[stack.length - 1]?.name === "CodeGroup" && prose.trim() && !/^\s*<\/?CodeGroup/.test(prose))
       report(file, line, "UNSUPPORTED_NODE", "<CodeGroup> can only contain code blocks.");
     if (/^\s*(?:[-*+]|\d+[.)])[ \t]+(?:[-*+]|\d+[.)])(?:[ \t]|$)/.test(text))
       report(file, line, "INVALID_DOCUMENT", 'A list item that starts with another list marker ("- 1. text", "- - text", "1. - text") is rejected; use one marker per line, e.g. "1. text", or start the item with text such as "- **(1) Name**".');
@@ -320,6 +426,7 @@ for (const path of files) {
     if (heading) headingId(ids, plain(heading[1]));
     for (const m of prose.matchAll(/(!?)\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+["'][^"']*["'])?\s*\)/g)) {
       const [, image, href] = m;
+      if (!isPublicUrl(href)) report(file, line, "UNSAFE_URL", `"${href}" is a private or expiring link.`);
       if (image) {
         if (!/^https:\/\//i.test(href))
           report(file, line, "UNMANAGED_BINARY", `Image "${href}" must be an absolute https:// URL.`);
@@ -327,7 +434,7 @@ for (const path of files) {
     }
   });
   if (pending) report(file, pending.line, "UNSUPPORTED_NODE", `<${pending.name}> tag is never closed.`);
-  for (const name of stack) report(file, 0, "UNSUPPORTED_NODE", `<${name}> is never closed.`);
+  for (const { name } of stack) report(file, 0, "UNSUPPORTED_NODE", `<${name}> is never closed.`);
   if (fence) report(file, 0, "UNSUPPORTED_NODE", "A code fence is never closed.");
 
   // FrontLit's parser decides whether the page itself is valid; the built-in findings
@@ -341,6 +448,11 @@ for (const path of files) {
       fm = parsed.frontmatter ?? {};
       ids = new Set(docs.extractDocsHeadings(parsed.content).map((h) => h.id));
       slug = docs.resolveDocsSourcePath(`docs/${file}`, "docs", fm.slug).slug;
+      // Blocks missing a prop they need to render (a Button without href): FrontLit
+      // refuses to publish them. Older parser versions don't have this check.
+      const lines = hints.filter((h) => h.code === "INCOMPLETE_BLOCK").map((h) => h.line);
+      for (const d of docs.incompleteDocsBlocks?.(parsed.content) ?? [])
+        report(file, lines.shift() ?? 0, "INCOMPLETE_BLOCK", d.message);
     } catch (error) {
       if (!(error instanceof docs.DocsContentError)) report(file, 0, "PARSER_ERROR", error.message);
       else {

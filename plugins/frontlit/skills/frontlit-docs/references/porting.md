@@ -57,7 +57,7 @@ Delete all `import`/`export` lines first. Then convert per component. **Keep a s
 
 | Source | FrontLit |
 | --- | --- |
-| `<Callout type="warn">` (Fumadocs), `<Warning>`, `<Note>`, `<Tip>`, `:::warning`, `> [!NOTE]` | `<Callout type="warning">`. Map types to `note`, `tip`, `info`, `warning`, `danger`: Fumadocs `warn` → `warning`, `error` → `danger`, `idea` → `tip`; Mintlify/Docusaurus `Check`/`success` → `tip`, `caution` → `warning`. Keep `title`. Drop a Callout `icon` prop |
+| `<Callout type="warn">` (Fumadocs), `<Warning>`, `<Note>`, `<Tip>`, `:::warning`, `> [!NOTE]` | `<Callout type="warning">`. Map types to `note`, `tip`, `info`, `success`, `warning`, `danger`: Fumadocs `warn` → `warning`, `error` → `danger`, `idea` → `tip`; Mintlify/Docusaurus `Check`/`success` and GitBook `success` hints → `success`, `caution` → `warning`. Keep `title`. Drop a Callout `icon` prop |
 | `<Tabs items>`/`<Tab value>` (Fumadocs) | Unchanged. Drop `groupId`, `persist`, `updateAnchor`, `defaultIndex` props, which are not accepted. Docusaurus/Mintlify `<TabItem label>` → `<Tab value>` |
 | `<Steps>`/`<Step>` | Unchanged. Mintlify `<Steps><Step title="X">` → `<Step>` with `### X` as its first line |
 | `<Cards>`/`<Card title href icon>` | Unchanged. `icon` must be a Lucide name: `icon={<BookOpen />}` is accepted as is; other icon expressions or image props (`img`, `horizontal`) → drop. External `href` must be a safe URL |
@@ -66,7 +66,7 @@ Delete all `import`/`export` lines first. Then convert per component. **Keep a s
 | Package-manager fences (```` ```package-install ````, `npm2yarn`, Docusaurus `<Tabs groupId="npm2yarn">`) | `<CodeGroup>` with `bash title="npm"`, `pnpm`, `yarn`, `bun` fences, each with the right command |
 | `<TypeTable type={{…}}>` (Fumadocs), `<ParamField>`, `<ResponseField>` | `<TypeTable>` with literal rows. Convert non-string `default` values to strings, drop other keys (`typeDescription`, `deprecated`, `id`, `link`), and use `required: true` for required rows. For rich descriptions or more than a handful of columns, use a Markdown table (no alignment) |
 | `<Frame>`, `<img>`, `<Image>`, `![](…)` | `![alt](https://…)` on its own line, with a blank line before and after. An image on the line right after text joins that paragraph and renders inline |
-| `<Video>`, `<iframe>`, embeds | A link: `[Watch the demo](https://…)` |
+| `<Video>`, `<iframe>`, embeds | A link: `[Watch the demo](https://…)`. An H5P frame from `h5p.org` or a `*.h5p.com` subdomain becomes `<H5P src="https://…/embed/…" title="…" />` by hand (the converter leaves a link) |
 | Live/interactive widgets (uploaders, playgrounds, editors, sandboxes, `<…Demo />`) | Not supported (unknown component). Remove; add a sentence linking to where the reader can try it, and list each in the PR |
 | `<Badge>`, `<Kbd>`, icons, emoji components | Plain or inline-code text |
 | Code fence meta (`{1-3}`, `showLineNumbers`, `twoslash`) and inline highlight markers (`// [!code highlight]`, `// [!code ++]`) | Language, plus `title="…"` if the source had one; delete the markers (they would otherwise stay as literal comments) |
