@@ -25,7 +25,7 @@ const PLUGIN_VERSION = (() => {
   }
 })();
 const BY = PLUGIN_VERSION ? ` (FrontLit plugin ${PLUGIN_VERSION})` : "";
-const OUTDATED_HINT = "If this looks wrong, your FrontLit plugin may be outdated: run `claude plugin update frontlit@frontlit`.";
+const OUTDATED_HINT = "If this looks wrong, your FrontLit plugin may be outdated: run `claude plugin update frontlit@frontlit` (Codex: `codex plugin marketplace upgrade frontlit`).";
 // Errors that come from bundled schemas or rules, which an old install can get wrong.
 const RULE_ERROR = /^(INVALID_(?!JSON)|UNSUPPORTED_)/;
 const ICONS = JSON.parse(readFileSync(join(here, "schema/lucide-icons.json"), "utf8"));
