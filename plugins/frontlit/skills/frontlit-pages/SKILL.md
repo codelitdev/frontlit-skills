@@ -49,7 +49,7 @@ FrontLit's ICP is SaaS founders; the websites they create can serve any domain. 
 3. **Write the file** following `references/format.md`:
    - Start with `"$schema": "https://frontlit.app/schema/page.v1.json"`, then `title`, `description`, `layout`.
    - **Set every content setting a block shows** (titles, descriptions, buttons, items, tiers). Unset settings fall back to FrontLit's demo copy ("Run your whole business from one front office"). Use `""` or `[]` to hide something.
-   - One H1 per page, normally the hero. A custom composition can own the H1; do not add a redundant hero merely to satisfy the checker. Verify the rendered heading hierarchy when embeds contain headings.
+   - One H1 per page, normally the hero. On blog, docs and changelog pages the content feed renders the H1, so a hero there uses `"titleLevel": "h2"`. A custom composition can own the H1; do not add a redundant hero merely to satisfy the checker. Verify the rendered heading hierarchy when embeds contain headings.
    - Never put a header or footer block in a page; edit `site.json` instead.
 4. Header and footer links must point at pages that exist (or the release fails). Adding a page the visitor should find? Add it to `site.json` too.
 

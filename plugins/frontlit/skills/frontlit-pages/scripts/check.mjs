@@ -420,7 +420,11 @@ for (const name of entries) {
         warn(file, ptr(["layout", i, "settings", key]), "DEMO_CONTENT", `Unset, so it renders the block default ${JSON.stringify(d).slice(0, 60)}. Set it, or "" / [] to hide it (fine if that default is exactly what you want).`);
     }
   });
-  if (h1 !== 1) warn(file, "/layout", "HEADING_LEVEL", `${h1} H1 titles; use exactly one (the hero's).`);
+  // FrontLit's content feed always renders the page's H1 itself
+  // ("<Site title> Blog", "Help Center" or "Changelog").
+  if (feeds) {
+    if (h1) warn(file, "/layout", "HEADING_LEVEL", `The content feed renders this page's H1; set "titleLevel": "h2" on the other ${h1} H1 title(s) (a hero defaults to h1).`);
+  } else if (h1 !== 1) warn(file, "/layout", "HEADING_LEVEL", `${h1} H1 titles; use exactly one (the hero's).`);
 }
 
 // --- site.json -----------------------------------------------------------

@@ -44,4 +44,13 @@ r=run('node',[join(scripts,'check.mjs'),'frontlit'],textDir);assert.equal(r.stat
 for(const m of [/Heading level 1 is unsupported/,/Heading level 5 is unsupported/,/Tables are unsupported/,/Images are unsupported in block rich text; use a Media block/])assert.match(r.text,m);
 writeFileSync(join(textDir,'frontlit/pages/index.json'),textPage('## Plans\n\n- **One**\n\n> Quote\n\n```md\n| a | b |\n| - | - |\n![x](y.png)\n# not a heading\n```\n\n---\n\n#### Small [link](/pricing)'));
 r=run('node',[join(scripts,'check.mjs'),'frontlit'],textDir);assert.equal(r.status,0,r.text);assert.doesNotMatch(r.text,/UNSUPPORTED_MARKDOWN|settings\/text  HEADING_LEVEL/,r.text);
-console.log('PASS: embed sync/check, selection safeguards, content preservation, changed/untracked warning reporting, global blocking errors, full warning mode, missing-Git handling and page rich-text limits.');
+const feedDir=mkdtempSync(join(tmpdir(),'frontlit-feed-h1-'));mkdirSync(join(feedDir,'frontlit/pages'),{recursive:true});
+const feedPage=layout=>JSON.stringify({$schema:'https://frontlit.app/schema/page.v1.json',title:'Blog',description:'Posts from the team.',layout});
+writeFileSync(join(feedDir,'frontlit/pages/blog.json'),feedPage([{name:'content-feed'}]));
+r=run('node',[join(scripts,'check.mjs'),'frontlit'],feedDir);assert.equal(r.status,0,r.text);assert.doesNotMatch(r.text,/HEADING_LEVEL/,r.text);
+const feedHero=level=>({name:'hero',settings:{title:'Notes',...(level?{titleLevel:level}:{}),buttonCaption:'',buttonAction:'',secondaryButtonCaption:'',secondaryButtonAction:''}});
+writeFileSync(join(feedDir,'frontlit/pages/blog.json'),feedPage([feedHero(),{name:'content-feed'}]));
+r=run('node',[join(scripts,'check.mjs'),'frontlit'],feedDir);assert.equal(r.status,0,r.text);assert.match(r.text,/blog.json#\/layout  HEADING_LEVEL  The content feed renders this page's H1/);
+writeFileSync(join(feedDir,'frontlit/pages/blog.json'),feedPage([feedHero('h2'),{name:'content-feed'}]));
+r=run('node',[join(scripts,'check.mjs'),'frontlit'],feedDir);assert.doesNotMatch(r.text,/HEADING_LEVEL/,r.text);
+console.log('PASS: embed sync/check, selection safeguards, content preservation, changed/untracked warning reporting, global blocking errors, full warning mode, missing-Git handling, page rich-text limits and feed-page H1 counting.');

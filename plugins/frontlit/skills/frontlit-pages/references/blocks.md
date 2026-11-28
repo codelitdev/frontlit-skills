@@ -110,7 +110,7 @@ Good for animated diagrams, data tables, tabbed code samples and logo strips wit
 
 ## content-feed
 
-`{ "name": "content-feed" }`, no settings. Only on `blog.json`, `docs.json` and `changelog.json`, exactly once each: it's where FrontLit renders the article list, docs or updates. Add a hero above it and, optionally, an email-form below.
+`{ "name": "content-feed" }`, no settings. Only on `blog.json`, `docs.json` and `changelog.json`, exactly once each: it's where FrontLit renders the article list, docs or updates. The feed renders the page's H1 itself (`<Site title> Blog`, `Help Center` or `Changelog`, with the site subtitle), so a feed page needs no hero. If you add one above it, set its `"titleLevel": "h2"` so the page keeps a single H1. Optionally add an email-form below.
 
 ## header and footer
 
