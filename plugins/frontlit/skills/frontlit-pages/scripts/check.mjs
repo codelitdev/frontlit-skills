@@ -16,6 +16,18 @@ const PAGE_SCHEMA = JSON.parse(readFileSync(join(here, "schema/page.v1.json"), "
 const SITE_SCHEMA = JSON.parse(readFileSync(join(here, "schema/site.v1.json"), "utf8"));
 const PAGE_URL = PAGE_SCHEMA.$id;
 const SITE_URL = SITE_SCHEMA.$id;
+// The plugin version these rules belong to (absent when installed as a bare skill).
+const PLUGIN_VERSION = (() => {
+  try {
+    return JSON.parse(readFileSync(join(here, "../../../.claude-plugin/plugin.json"), "utf8")).version;
+  } catch {
+    return null;
+  }
+})();
+const BY = PLUGIN_VERSION ? ` (FrontLit plugin ${PLUGIN_VERSION})` : "";
+const OUTDATED_HINT = "If this looks wrong, your FrontLit plugin may be outdated: run `claude plugin update frontlit@frontlit`.";
+// Errors that come from bundled schemas or rules, which an old install can get wrong.
+const RULE_ERROR = /^(INVALID_(?!JSON)|UNSUPPORTED_)/;
 const ICONS = JSON.parse(readFileSync(join(here, "schema/lucide-icons.json"), "utf8"));
 const ICON_NAMES = new Set(ICONS.icons);
 
@@ -73,7 +85,11 @@ const errors = [];
 const warnings = [];
 const otherWarnings = [];
 const at = (file, pointer) => `${relative(root, file)}${pointer ? `#${pointer}` : ""}`;
-const error = (file, pointer, code, message) => errors.push(`${at(file, pointer)}  ${code}  ${message}`);
+let ruleErrors = 0;
+const error = (file, pointer, code, message) => {
+  if (RULE_ERROR.test(code)) ruleErrors++;
+  errors.push(`${at(file, pointer)}  ${code}  ${message}`);
+};
 const warn = (file, pointer, code, message) => {
   const line = `${at(file, pointer)}  ${code}  ${message}`;
   warnings.push(line);
@@ -534,7 +550,8 @@ if (otherWarnings.length) {
 }
 if (errors.length) {
   console.log(`Errors:\n${errors.join("\n")}\n`);
-  console.log(`${errors.length} error(s), ${warnings.length} warning(s) in ${pages.length} page(s). Nothing will go live until the errors are fixed.`);
+  console.log(`${errors.length} error(s), ${warnings.length} warning(s) in ${pages.length} page(s)${BY}. Nothing will go live until the errors are fixed.`);
+  if (ruleErrors) console.log(OUTDATED_HINT);
   process.exit(1);
 }
-console.log(`OK: ${pages.length} page(s)${site ? " and site.json" : ""}, ${warnings.length} warning(s).`);
+console.log(`OK: ${pages.length} page(s)${site ? " and site.json" : ""}, ${warnings.length} warning(s)${BY}.`);

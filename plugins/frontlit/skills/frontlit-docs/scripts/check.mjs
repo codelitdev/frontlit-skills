@@ -15,8 +15,23 @@
 // checks (routes, sections, links, anchors) always run here. FrontLit's pull request
 // check stays authoritative.
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadFrontlitParser, PACKAGE } from "./frontlit-parser.mjs";
+
+const here = dirname(fileURLToPath(import.meta.url));
+// The plugin version these rules belong to (absent when installed as a bare skill).
+const PLUGIN_VERSION = (() => {
+  try {
+    return JSON.parse(readFileSync(join(here, "../../../.claude-plugin/plugin.json"), "utf8")).version;
+  } catch {
+    return null;
+  }
+})();
+const BY = PLUGIN_VERSION ? ` (FrontLit plugin ${PLUGIN_VERSION})` : "";
+const OUTDATED_HINT = "If this looks wrong, your FrontLit plugin may be outdated: run `claude plugin update frontlit@frontlit`.";
+// Errors that come from bundled schemas or rules, which an old install can get wrong.
+const RULE_ERROR = /^(INVALID_(?!JSON)|UNSUPPORTED_)/;
 
 const problems = [];
 const warnings = [];
@@ -602,7 +617,8 @@ if (showTree) {
 if (warnings.length) console.log(`${warnings.map(format).join("\n")}\n${warnings.length} warning(s).\n`);
 if (problems.length) {
   console.log(problems.map(format).join("\n"));
-  console.log(`\n${problems.length} problem(s) in ${files.length} file(s).`);
+  console.log(`\n${problems.length} problem(s) in ${files.length} file(s)${BY}.`);
+  if (problems.some((p) => RULE_ERROR.test(p.code))) console.log(OUTDATED_HINT);
   process.exit(1);
 }
-console.log(`OK: ${files.length} file(s), ${routes.size} public doc(s).`);
+console.log(`OK: ${files.length} file(s), ${routes.size} public doc(s)${BY}.`);

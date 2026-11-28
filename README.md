@@ -55,6 +55,17 @@ Run inside a repository, this command adds three things to it: the skills in `.a
 
 The plugins for Claude Code and Codex add nothing to the repository.
 
+### Updating
+
+Plugins don't update themselves. An old install checks your files against old rules and can report errors that aren't real. The checkers print their plugin version (`OK: … (FrontLit plugin 0.6.0)`), so compare it with the [latest release](plugins/frontlit/.claude-plugin/plugin.json). To update in Claude Code:
+
+```bash
+claude plugin marketplace update frontlit
+claude plugin update frontlit@frontlit
+```
+
+Then restart Claude Code. With `npx skills`, run `npx skills update`.
+
 If you installed the older `frontlit-docs` or `frontlit-pages` plugins, uninstall them and install `frontlit` instead.
 
 ## Try it
