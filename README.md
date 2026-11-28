@@ -1,6 +1,6 @@
 # FrontLit skills
 
-Teach your AI coding agent to build your [FrontLit](https://frontlit.app) website and docs.
+Teach your AI coding agent to build your [FrontLit](https://frontlit.app) website and docs, and to add FrontLit's support chat to your product.
 
 A **skill** is a set of instructions an AI agent (Claude Code, Codex, Cursor and others) reads before it starts a task. With these skills installed, you can ask your agent things like "move our docs to FrontLit" or "add a pricing page", and it follows FrontLit's rules. It checks its own work and opens a pull request for you to review. Nothing goes live until you merge.
 
@@ -9,6 +9,7 @@ A **skill** is a set of instructions an AI agent (Claude Code, Codex, Cursor and
 | [`frontlit-docs`](plugins/frontlit/skills/frontlit-docs/SKILL.md) | Write docs pages, or move an existing docs site (Fumadocs, Docusaurus, Mintlify, Nextra, GitBook, VitePress, plain Markdown) to FrontLit, including an API reference from an OpenAPI spec |
 | [`frontlit-pages`](plugins/frontlit/skills/frontlit-pages/SKILL.md) | Create and design landing pages, set the header, footer and theme, change the site name or logo, and add embeds |
 | [`frontlit-articles`](plugins/frontlit/skills/frontlit-articles/SKILL.md) | Write, edit and publish blog posts, with a clean slug, excerpt, featured image and SEO (needs a connected FrontLit account) |
+| [`frontlit-support`](plugins/frontlit/skills/frontlit-support/SKILL.md) | Add FrontLit's support chat inside your own product: a server route that passes the signed-in user, their account and what went wrong, the chat snippet, and Help / Contact support buttons |
 
 ## Before you start
 
@@ -93,6 +94,7 @@ Use the frontlit-pages skill to redesign our homepage in the FrontLit builder, a
 Use the frontlit-pages skill to set our website name to John's Piping Pizza.
 Use the frontlit-articles skill to draft a blog post on our new webhooks feature.
 Use the frontlit-articles skill to add a featured image to our latest post and publish it.
+Use the frontlit-support skill to add a Help button to our app that opens FrontLit's chat.
 ```
 
 What happens next:
