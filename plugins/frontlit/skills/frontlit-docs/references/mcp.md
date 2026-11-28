@@ -10,6 +10,16 @@ Discover available tools and inspect their current schemas; clients may prefix t
 
 Do not change ownership, pause sync, grant capabilities or connect/disconnect a repository just to bypass a write failure. Some setup/activation tools require the original account's interactive browser consent and cannot finalize through MCP; follow their returned action instead of repeatedly retrying.
 
+## Edit an editor-owned page
+
+When docs are editor-owned (`source: "editor"`), the pages live in FrontLit, not in files. Find the page with `list_documentation_pages`, read it with `get_documentation_page` (its `draftMarkdown` is the body in this skill's Markdown format, also returned verbatim as its own text block), and change it with `edit_documentation_page`:
+
+```json
+{"documentId": "doc_…", "edits": [{"old_str": "Run the instaler.", "new_str": "Run the installer."}]}
+```
+
+Edits are exact replacements on `draftMarkdown`, applied in order, all or nothing; each `old_str` must match exactly once. `EDIT_NOT_FOUND` or `EDIT_AMBIGUOUS` means read again or add surrounding text; diagnostics with line numbers mean the edited Markdown is invalid and nothing was saved; `STALE_DOCS_DRAFT` means someone saved at the same moment, so read again and retry. It writes the draft only: publish with `publish_documentation_page` when the user asks. Use `update_documentation_page` (with `expectedDraftVersion`) for title, slug or section changes and full rewrites, not for small body changes.
+
 ## API reference (OpenAPI)
 
 The API reference is configured on the Git connection, separate from the docs folder. Discover the exact tool names and schemas first (they mirror the REST operations `getApiReference`, `previewApiReference`, `updateApiReference`).

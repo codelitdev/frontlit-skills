@@ -9,7 +9,7 @@ A standalone `SKILL.md` is portable workflow guidance, not a universal MCP insta
 | Change | Source |
 | --- | --- |
 | Website name, subtitle or logo | FrontLit branding: `get_team_settings` / `update_team_settings`, even when pages are Git-managed |
-| One page's SEO title or description | Page JSON in Git, or builder SEO / MCP `update_page` for builder-owned pages |
+| One page's SEO title or description | Page JSON in Git, or builder SEO / MCP `edit_page` for builder-owned pages |
 | A page's visible heading | The hero block title |
 | Git-managed header, footer, theme or redirects | `site.json` |
 

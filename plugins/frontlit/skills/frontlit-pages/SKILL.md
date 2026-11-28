@@ -13,7 +13,7 @@ FrontLit can publish a site's landing pages from a folder of JSON files in the t
 | Request | Setting and source |
 | --- | --- |
 | Website name, site title, or branding across the website | FrontLit branding; use `get_team_settings` → `update_team_settings` → `get_team_settings`, even when pages are Git-managed. See `references/mcp.md`. |
-| One page's search or social metadata | Page JSON SEO fields in Git; builder **Edit SEO settings** or supported MCP `update_page` fields for builder-owned pages. See `references/seo.md`. |
+| One page's search or social metadata | Page JSON SEO fields in Git; builder **Edit SEO settings** or MCP `edit_page` for builder-owned pages. See `references/seo.md`. |
 | The heading visitors read on a page | Hero block `settings.title`; this is separate from SEO and branding. |
 | Shared navigation, footer, theme or redirects | `site.json` for Git-managed pages; follow builder guidance for builder-owned pages. Branding is stored separately. |
 
@@ -93,7 +93,7 @@ If the FrontLit MCP server is connected, get the real branding from it instead o
 
 ## Pages not in Git
 
-If the repository isn't connected for pages, work in the visual builder and follow `references/builder.md`; blocks, writing, design and embeds guidance is the same. If the FrontLit MCP server is connected, the same applies through its tools: `list_pages`, `get_page`, `create_page`, `update_page` (writes the draft only), `publish_page`. Differences: rich text there is TipTap JSON instead of Markdown, and images are media library items. Only call `publish_page` or `delete_page` when the user asks. If a tool answers that the page is managed in GitHub, switch to the files.
+If the repository isn't connected for pages, work in the visual builder and follow `references/builder.md`; blocks, writing, design and embeds guidance is the same. If the FrontLit MCP server is connected, the same applies through its tools: `list_pages`, `get_page` (returns the draft as the same page JSON this skill writes), `create_page`, `edit_page` (exact replacements on that JSON; writes the draft only), `publish_page`. Change pages with `edit_page`, not by resending the layout with `update_page`; see `references/mcp.md`. Only call `publish_page` or `delete_page` when the user asks. If a tool answers that the page is managed in GitHub, switch to the files.
 
 ## Rules
 
