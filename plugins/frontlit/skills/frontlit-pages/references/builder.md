@@ -71,7 +71,7 @@ Labels below are FrontLit's at the time of writing. If a label differs, look for
 
 ## Driving the UI from automation (until there's an API)
 
-Prefer the FrontLit MCP tools (`list_pages`, `get_page`, `update_page`…) or Git sync (the rest of this skill) when available. When you must drive the builder:
+Prefer the FrontLit MCP tools (`list_pages`, `get_page`, `edit_page`…) or Git sync (the rest of this skill) when available. When you must drive the builder:
 
 - **Inputs** are React-controlled. Set the value with the native setter, then fire events:
 

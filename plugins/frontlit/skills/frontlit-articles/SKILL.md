@@ -22,13 +22,13 @@ These tools come from the FrontLit MCP connection. The Claude Code and Codex plu
 1. **Pick the team.** Call `list_teams` and use the team the user named. If there are several and it's unclear which, ask. Never guess. Pass its `teamId` to every call after this.
 2. **Read what exists.** `list_articles` (use `q` to search) shows titles, slugs and status. Open one or two recent published posts with `get_article` to match tone, length and structure, and to make sure the topic isn't already covered. `get_article` output can be large; see "Reading articles" in `references/mcp.md`.
 3. **Agree on the angle** if the request is vague: reader, the one thing they should take away, and the call to action.
-4. **Write the body locally** as Markdown (`references/markdown.md`) and keep that file: it's your source for later edits.
+4. **Write the body** as Markdown (`references/markdown.md`).
 5. **Create the draft with a slug-shaped title** (see "Slug" below): `create_article({ teamId, title: "<slug words>", markdown })`. Check the returned `slug`.
 6. **Set the real headline, excerpt and image** with `update_article({ teamId, documentId, title, excerpt, featuredImage })`. This writes the draft only.
 7. **Review.** Read back the fields you set (`get_article`, filtered), run the checklist below, and show the user the title, slug, excerpt and a summary or the full text. If the result has `publishable: false`, fix what `diagnostics` reports.
 8. **Publish only when asked:** `publish_article({ teamId, documentId })`. "Write a post" means a draft; "publish it" or "make it live" means publish. After publishing, report the URL (`https://<site>/blog/<slug>`).
 
-To fix a published post, `update_article` then `publish_article` again (with the user's go-ahead). `discard_article_draft` drops unpublished draft changes and returns to the live version; `delete_article` removes the post permanently. Both are destructive, so confirm first.
+To fix a post, read it with `get_article` and change the body with `edit_article` (exact replacements; see `references/mcp.md`), or metadata with `update_article`; then `publish_article` again if it was live (with the user's go-ahead). `discard_article_draft` drops unpublished draft changes and returns to the live version; `delete_article` removes the post permanently. Both are destructive, so confirm first.
 
 ## Slug
 

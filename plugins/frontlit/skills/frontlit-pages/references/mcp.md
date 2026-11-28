@@ -21,12 +21,31 @@ Branding saves directly to team settings, outside page drafts and Git releases. 
 | --- | --- |
 | Discover publishing ownership | `get_documentation_github({})`; `binding.root` is the site folder and `binding.pagesDirectory` identifies Git-managed landing pages. `binding.docsEnabled` is independent. |
 | Branding for the local preview | `get_team_settings({})` only (read-only); copy `title`, `subtitle` and `logo.url` into the gitignored `preview.context.json` (see `SKILL.md` step 3). Never call `update_team_settings` for this. |
-| Read a builder-owned page | `list_pages` to find its ID, then `get_page({"pageId": "…"})`. Read the existing full layout before changing it. |
-| Change a builder-owned page's SEO | `update_page` accepts `title`, `description` and `robotsAllowed` and saves the page draft. It does not accept `socialImage`; use the builder for that field. `name` is the internal page name, not website branding. See `seo.md`. |
-| Change builder-owned page blocks | `update_page` with the page ID and revised layout. Rich text uses TipTap JSON here; Git page JSON uses Markdown. Either way it holds basic formatting only (see the Rich text rule in `format.md`). |
+| Read a builder-owned page | `list_pages` to find its ID, then `get_page({"pageId": "…"})`. It returns the draft as `draftFile`: the same page JSON a Git repository holds (`format.md`: layout and SEO, rich text as Markdown, defaults omitted), also as its own text block. The shared header/footer are not in it. |
+| Change part of a builder-owned page (blocks, text, SEO) | `edit_page({"pageId": "…", "edits": [{"old_str": "…", "new_str": "…"}]})`: exact-match replacements on `draftFile`, applied in order, all or nothing; each `old_str` must match exactly once (add surrounding text if it doesn't). It can change, add, remove or reorder blocks and set `title`, `description`, `robotsAllowed` and `socialImage`. Copy `old_str` from `draftFile` exactly, JSON escaping included (`\n` inside rich-text strings). The reply carries only the new `draftVersion` and status; call `get_page` again to check the result. See "Editing with exact replacements" below. |
+| Replace a page's whole layout or rename it | `update_page` (draft only). `name` is the internal page name, not website branding; the slug changes the URL immediately. Its `layout` takes stored blocks with TipTap rich text, so prefer `edit_page` for content changes. |
 | Publish a page | `publish_page({"pageId": "…"})` only when the user asked to publish. For Git-managed pages, use the repository/PR workflow instead. |
 | Inspect docs Git failures | `list_documentation_github_checks` / `get_documentation_github_check`; these reports concern docs and may redact diagnostic prose. Use available GitHub annotations for missing details. |
 | Verify docs Git publication | `get_documentation_github`; compare `binding.observedSha`, `validatedSha` and `liveSha`. A validated commit is not necessarily live. These fields describe docs sync; use pages preview/release status for landing pages. |
+
+### Editing with exact replacements
+
+Use `edit_page` (and `edit_article`, `edit_documentation_page`, `edit_product_update` for bodies) instead of resending a page or body: the request grows with the change, not the document. Read first, then send only what changes:
+
+```json
+{"pageId": "pg_…", "edits": [
+  {"old_str": "\"title\": \"Pricing that scales\"", "new_str": "\"title\": \"Plans that scale\""},
+  {"old_str": "Start free.\\n\\nUpgrade", "new_str": "Start free for 14 days.\\n\\nUpgrade"}
+]}
+```
+
+- `EDIT_NOT_FOUND`: the text isn't there (a typo, different whitespace or escaping, or someone changed it). Read again and copy it exactly.
+- `EDIT_AMBIGUOUS`: it occurs more than once. Include more surrounding text.
+- Schema errors (JSON pointers) mean the edited file isn't a valid page; nothing was saved.
+- `STALE_DRAFT`: someone saved the draft at the same moment. Read again and retry.
+- `INVALID_STORED_DRAFT` from `get_page`: the stored draft predates a schema change. Repair the listed blocks with `update_page`, then edit normally.
+
+A person editing the same page in the builder sees your change when they return to the tab, or gets a "changed elsewhere" prompt if they had unsaved edits.
 
 A Git-ownership error means switch to the owning files. Do not disconnect sync to make a tool write succeed. Team branding still uses settings tools independently of Git ownership. A failed write, missing permission or unavailable tool is not a reason to modify a different setting.
 

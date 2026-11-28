@@ -37,9 +37,10 @@ Rules that trip people up:
 
 ## Editing without losing changes
 
-There's no patch operation: `update_article` with `markdown` replaces the whole draft body. And `get_article` returns TipTap JSON, not Markdown, so you can't round-trip the body exactly.
+Change an existing body with `edit_article` (exact replacements on the `draftMarkdown` from `get_article`; see "Editing a body" in `mcp.md`), not by resending it with `update_article`.
 
-- Keep the Markdown you sent in a local file and edit that, then resend the full body.
-- Before you resend, check whether someone edited the post in the FrontLit editor since your last write: `get_article` and compare `updatedAt` and the draft text with what you sent. If it changed, merge their edits into your Markdown first, or ask the user, rather than overwriting them.
-- For a metadata-only change (title, excerpt, featured image), send just those fields and leave the body out.
+- Read `get_article` right before editing, so your `old_str` values match the current draft, including any edits someone made in the FrontLit editor.
+- A failed edit changes nothing. Read again and retry with text copied exactly.
+- For a metadata-only change (title, excerpt, featured image), send just those fields with `update_article` and leave the body out.
+- Resend the whole body with `update_article` only for a full rewrite. Pass `expectedDraftVersion` from your last read so the write is refused if someone saved since.
 - `status: "published_with_changes"` means the draft differs from the live post. Publishing ships every draft change, including any the user made.
