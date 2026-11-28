@@ -261,10 +261,11 @@ function locator(yaml, source) {
 async function main() {
   const args = process.argv.slice(2);
   const option = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+  const help = args.includes("--help") || args.includes("-h");
   const file = args.find((a) => !a.startsWith("--"));
-  if (!file || !existsSync(file)) {
-    console.error("Usage: node openapi.mjs <spec> [--mount=api-reference] [--routes] [--cors-origin=<https://docs-origin>] [--json] [--no-parser] [--parser=<dir>]");
-    process.exit(2);
+  if (help || !file || !existsSync(file)) {
+    (help ? console.log : console.error)("Usage: node openapi.mjs <spec> [--mount=api-reference] [--routes] [--cors-origin=<https://docs-origin>] [--json] [--no-parser] [--parser=<dir>]");
+    process.exit(help ? 0 : 2);
   }
   const json = args.includes("--json");
   const say = (line) => !json && console.log(line);

@@ -16,6 +16,18 @@ const PAGE_SCHEMA = JSON.parse(readFileSync(join(here, "schema/page.v1.json"), "
 const SITE_SCHEMA = JSON.parse(readFileSync(join(here, "schema/site.v1.json"), "utf8"));
 const PAGE_URL = PAGE_SCHEMA.$id;
 const SITE_URL = SITE_SCHEMA.$id;
+// The plugin version these rules belong to (absent when installed as a bare skill).
+const PLUGIN_VERSION = (() => {
+  try {
+    return JSON.parse(readFileSync(join(here, "../../../.claude-plugin/plugin.json"), "utf8")).version;
+  } catch {
+    return null;
+  }
+})();
+const BY = PLUGIN_VERSION ? ` (FrontLit plugin ${PLUGIN_VERSION})` : "";
+const OUTDATED_HINT = "If this looks wrong, your FrontLit plugin may be outdated: run `claude plugin update frontlit@frontlit` (Codex: `codex plugin marketplace upgrade frontlit`).";
+// Errors that come from bundled schemas or rules, which an old install can get wrong.
+const RULE_ERROR = /^(INVALID_(?!JSON)|UNSUPPORTED_)/;
 const ICONS = JSON.parse(readFileSync(join(here, "schema/lucide-icons.json"), "utf8"));
 const ICON_NAMES = new Set(ICONS.icons);
 
@@ -27,6 +39,21 @@ const LINK_KEYS = new Set(["href", "buttonAction", "secondaryButtonAction", "cta
 const LIMITS = { files: 200, bytes: 2 * 1024 * 1024, assetBytes: 10 * 1024 * 1024 };
 
 const args = process.argv.slice(2);
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`Usage: node check.mjs [site-folder | pages-folder] [--fix] [--changed]
+
+Checks <site>/pages/*.json and <site>/site.json against FrontLit's page.v1 / site.v1
+schemas and import rules. Run it from the repository root. With no folder, it looks
+for frontlit/pages or a pages folder whose files use the page.v1 schema.
+
+  --fix      after a clean check, rewrite pages and site.json in canonical form
+  --changed  show warnings in detail only for files changed since HEAD (or untracked);
+             errors are always shown
+  -h, --help show this help
+
+Exit codes: 0 OK, 1 errors found, 2 folder not found or --changed outside Git.`);
+  process.exit(0);
+}
 const fix = args.includes("--fix");
 const root = process.cwd();
 // Reporting filter only: never skip validation or hide blocking errors.
@@ -58,7 +85,11 @@ const errors = [];
 const warnings = [];
 const otherWarnings = [];
 const at = (file, pointer) => `${relative(root, file)}${pointer ? `#${pointer}` : ""}`;
-const error = (file, pointer, code, message) => errors.push(`${at(file, pointer)}  ${code}  ${message}`);
+let ruleErrors = 0;
+const error = (file, pointer, code, message) => {
+  if (RULE_ERROR.test(code)) ruleErrors++;
+  errors.push(`${at(file, pointer)}  ${code}  ${message}`);
+};
 const warn = (file, pointer, code, message) => {
   const line = `${at(file, pointer)}  ${code}  ${message}`;
   warnings.push(line);
@@ -420,7 +451,11 @@ for (const name of entries) {
         warn(file, ptr(["layout", i, "settings", key]), "DEMO_CONTENT", `Unset, so it renders the block default ${JSON.stringify(d).slice(0, 60)}. Set it, or "" / [] to hide it (fine if that default is exactly what you want).`);
     }
   });
-  if (h1 !== 1) warn(file, "/layout", "HEADING_LEVEL", `${h1} H1 titles; use exactly one (the hero's).`);
+  // FrontLit's content feed always renders the page's H1 itself
+  // ("<Site title> Blog", "Help Center" or "Changelog").
+  if (feeds) {
+    if (h1) warn(file, "/layout", "HEADING_LEVEL", `The content feed renders this page's H1; set "titleLevel": "h2" on the other ${h1} H1 title(s) (a hero defaults to h1).`);
+  } else if (h1 !== 1) warn(file, "/layout", "HEADING_LEVEL", `${h1} H1 titles; use exactly one (the hero's).`);
 }
 
 // --- site.json -----------------------------------------------------------
@@ -515,7 +550,8 @@ if (otherWarnings.length) {
 }
 if (errors.length) {
   console.log(`Errors:\n${errors.join("\n")}\n`);
-  console.log(`${errors.length} error(s), ${warnings.length} warning(s) in ${pages.length} page(s). Nothing will go live until the errors are fixed.`);
+  console.log(`${errors.length} error(s), ${warnings.length} warning(s) in ${pages.length} page(s)${BY}. Nothing will go live until the errors are fixed.`);
+  if (ruleErrors) console.log(OUTDATED_HINT);
   process.exit(1);
 }
-console.log(`OK: ${pages.length} page(s)${site ? " and site.json" : ""}, ${warnings.length} warning(s).`);
+console.log(`OK: ${pages.length} page(s)${site ? " and site.json" : ""}, ${warnings.length} warning(s)${BY}.`);

@@ -1,7 +1,7 @@
 ---
 name: frontlit-pages
 description: >-
-  Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, site-wide theme creation, and custom Embed snippets. Use when the user wants a new or improved website page across business domains (home, pricing, features, launch, about), wants to change the website name, branding, header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs).
+  Write, design or edit FrontLit landing pages: as JSON files in a Git repository (`frontlit/pages/*.json` plus `frontlit/site.json` for the header, footer and theme) or in FrontLit's visual page builder. Covers block choice, copy, SEO, high-end section design and backgrounds, site-wide theme creation, and custom Embed snippets. Use when the user wants a new or improved website page across business domains (home, pricing, features, launch, about), wants to change the website name, branding, header, footer, redirects or theme, or wants to move builder pages into the repository. Not for docs (use frontlit-docs) or blog posts (use frontlit-articles).
 ---
 
 # FrontLit Pages
@@ -49,7 +49,7 @@ FrontLit's ICP is SaaS founders; the websites they create can serve any domain. 
 3. **Write the file** following `references/format.md`:
    - Start with `"$schema": "https://frontlit.app/schema/page.v1.json"`, then `title`, `description`, `layout`.
    - **Set every content setting a block shows** (titles, descriptions, buttons, items, tiers). Unset settings fall back to FrontLit's demo copy ("Run your whole business from one front office"). Use `""` or `[]` to hide something.
-   - One H1 per page, normally the hero. A custom composition can own the H1; do not add a redundant hero merely to satisfy the checker. Verify the rendered heading hierarchy when embeds contain headings.
+   - One H1 per page, normally the hero. On blog, docs and changelog pages the content feed renders the H1, so a hero there uses `"titleLevel": "h2"`. A custom composition can own the H1; do not add a redundant hero merely to satisfy the checker. Verify the rendered heading hierarchy when embeds contain headings.
    - Never put a header or footer block in a page; edit `site.json` instead.
 4. Header and footer links must point at pages that exist (or the release fails). Adding a page the visitor should find? Add it to `site.json` too.
 

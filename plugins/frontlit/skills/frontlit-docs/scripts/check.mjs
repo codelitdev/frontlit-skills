@@ -15,8 +15,23 @@
 // checks (routes, sections, links, anchors) always run here. FrontLit's pull request
 // check stays authoritative.
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadFrontlitParser, PACKAGE } from "./frontlit-parser.mjs";
+
+const here = dirname(fileURLToPath(import.meta.url));
+// The plugin version these rules belong to (absent when installed as a bare skill).
+const PLUGIN_VERSION = (() => {
+  try {
+    return JSON.parse(readFileSync(join(here, "../../../.claude-plugin/plugin.json"), "utf8")).version;
+  } catch {
+    return null;
+  }
+})();
+const BY = PLUGIN_VERSION ? ` (FrontLit plugin ${PLUGIN_VERSION})` : "";
+const OUTDATED_HINT = "If this looks wrong, your FrontLit plugin may be outdated: run `claude plugin update frontlit@frontlit` (Codex: `codex plugin marketplace upgrade frontlit`).";
+// Errors that come from bundled schemas or rules, which an old install can get wrong.
+const RULE_ERROR = /^(INVALID_(?!JSON)|UNSUPPORTED_)/;
 
 const problems = [];
 const warnings = [];
@@ -42,6 +57,20 @@ function findDocsFolder(root) {
 }
 
 const args = process.argv.slice(2);
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`Usage: node check.mjs [docs-folder] [--api-mount=api-reference] [--tree] [--redirects=<map.json>]
+                    [--no-parser] [--parser=<dir>]
+
+  --api-mount  URL path of the generated API reference; links under /docs/<mount>/ aren't checked
+  --tree       print the sidebar FrontLit will build
+  --redirects  check a JSON map of old URL → new path against this folder
+  --no-parser  skip FrontLit's parser and use only the built-in rules (offline)
+  --parser     a directory whose node_modules has @frontlit/text-editor
+  -h, --help   show this help
+
+With no folder, it looks for the folder holding _sections.json. Exit 0 OK, 1 problems, 2 folder not found.`);
+  process.exit(0);
+}
 const option = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
 const apiMount = (option("api-mount") ?? "").replace(/^\/?(docs\/)?|\/$/g, "");
 const showTree = args.includes("--tree");
@@ -588,7 +617,8 @@ if (showTree) {
 if (warnings.length) console.log(`${warnings.map(format).join("\n")}\n${warnings.length} warning(s).\n`);
 if (problems.length) {
   console.log(problems.map(format).join("\n"));
-  console.log(`\n${problems.length} problem(s) in ${files.length} file(s).`);
+  console.log(`\n${problems.length} problem(s) in ${files.length} file(s)${BY}.`);
+  if (problems.some((p) => RULE_ERROR.test(p.code))) console.log(OUTDATED_HINT);
   process.exit(1);
 }
-console.log(`OK: ${files.length} file(s), ${routes.size} public doc(s).`);
+console.log(`OK: ${files.length} file(s), ${routes.size} public doc(s)${BY}.`);

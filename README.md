@@ -8,6 +8,7 @@ A **skill** is a set of instructions an AI agent (Claude Code, Codex, Cursor and
 | --- | --- |
 | [`frontlit-docs`](plugins/frontlit/skills/frontlit-docs/SKILL.md) | Write docs pages, or move an existing docs site (Fumadocs, Docusaurus, Mintlify, Nextra, GitBook, VitePress, plain Markdown) to FrontLit, including an API reference from an OpenAPI spec |
 | [`frontlit-pages`](plugins/frontlit/skills/frontlit-pages/SKILL.md) | Create and design landing pages, set the header, footer and theme, change the site name or logo, and add embeds |
+| [`frontlit-articles`](plugins/frontlit/skills/frontlit-articles/SKILL.md) | Write, edit and publish blog posts, with a clean slug, excerpt, featured image and SEO (needs a connected FrontLit account) |
 
 ## Before you start
 
@@ -46,7 +47,7 @@ codex mcp login frontlit
 npx skills add codelitdev/frontlit-skills
 ```
 
-This installs the two skills only. To connect your FrontLit account as well, see [Connect your FrontLit account](#connect-your-frontlit-account-optional).
+This installs the skills only. To connect your FrontLit account as well, see [Connect your FrontLit account](#connect-your-frontlit-account-optional).
 
 Run inside a repository, this command adds three things to it: the skills in `.agents/skills/`, links to them for your agent (such as `.claude/skills/`), and `skills-lock.json`, which records the installed version. Either:
 
@@ -54,6 +55,29 @@ Run inside a repository, this command adds three things to it: the skills in `.a
 - **Or keep them out of the repository:** install with `npx skills add -g codelitdev/frontlit-skills` instead, which installs for your user only. If you already installed into the repository, add `.agents/skills/`, `.claude/skills/` and `skills-lock.json` to `.gitignore` (not all of `.claude/`, which may hold shared settings).
 
 The plugins for Claude Code and Codex add nothing to the repository.
+
+### Updating
+
+Plugins don't update themselves. An old install checks your files against old rules and can report errors that aren't real. The checkers print their plugin version (`OK: … (FrontLit plugin 0.6.0)`), so compare it with the [latest release](plugins/frontlit/.claude-plugin/plugin.json).
+
+**Claude Code:**
+
+```bash
+claude plugin marketplace update frontlit
+claude plugin update frontlit@frontlit
+```
+
+Then restart Claude Code.
+
+**Codex:**
+
+```bash
+codex plugin marketplace upgrade frontlit
+```
+
+Then start a new Codex session. If the checkers still print the old version, reinstall: `codex plugin remove frontlit@frontlit`, then `codex plugin add frontlit@frontlit`.
+
+**`npx skills`:** run `npx skills update`.
 
 If you installed the older `frontlit-docs` or `frontlit-pages` plugins, uninstall them and install `frontlit` instead.
 
@@ -67,6 +91,8 @@ Use the frontlit-docs skill to add a guide on webhooks.
 Use the frontlit-pages skill to add a pricing page and link it from the header.
 Use the frontlit-pages skill to redesign our homepage in the FrontLit builder, as a draft.
 Use the frontlit-pages skill to set our website name to John's Piping Pizza.
+Use the frontlit-articles skill to draft a blog post on our new webhooks feature.
+Use the frontlit-articles skill to add a featured image to our latest post and publish it.
 ```
 
 What happens next:
@@ -76,13 +102,14 @@ What happens next:
 3. FrontLit checks the pull request too. If something is wrong, the check says what, and you can ask the agent to fix it.
 4. You review and merge. FrontLit publishes the change.
 
-Builder pages and branding changes don't go through Git: the agent makes them in FrontLit directly, which needs a connected account.
+Builder pages, blog posts and branding changes don't go through Git: the agent makes them in FrontLit directly, which needs a connected account. Blog posts stay drafts until you ask the agent to publish them.
 
 ## Connect your FrontLit account (optional)
 
 Everything in Git works without this. Connect your account when you want the agent to:
 
 - edit pages in the visual builder,
+- write and publish blog posts,
 - change your site name, subtitle or logo,
 - see what's live, or why a FrontLit check failed.
 

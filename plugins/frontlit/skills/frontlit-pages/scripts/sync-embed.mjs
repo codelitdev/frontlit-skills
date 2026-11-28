@@ -6,6 +6,10 @@ import { resolve } from "node:path";
 const usage = "Usage: node sync-embed.mjs <page.json> <snippet.html> [--index N] [--check]";
 try {
   const args = process.argv.slice(2);
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log(`${usage}\n\n  --index N  layout index of the script embed (needed when the page has several)\n  --check    exit 1 if the embed differs from the snippet, without writing`);
+    process.exit(0);
+  }
   const positional = [];
   let index, check = false;
   for (let i = 0; i < args.length; i++) {

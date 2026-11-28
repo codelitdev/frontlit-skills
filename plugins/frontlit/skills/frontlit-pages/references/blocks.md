@@ -110,11 +110,11 @@ Good for animated diagrams, data tables, tabbed code samples and logo strips wit
 
 ## content-feed
 
-`{ "name": "content-feed" }`, no settings. Only on `blog.json`, `docs.json` and `changelog.json`, exactly once each: it's where FrontLit renders the article list, docs or updates. Add a hero above it and, optionally, an email-form below.
+`{ "name": "content-feed" }`, no settings. Only on `blog.json`, `docs.json` and `changelog.json`, exactly once each: it's where FrontLit renders the article list, docs or updates. The feed renders the page's H1 itself (`<Site title> Blog`, `Help Center` or `Changelog`, with the site subtitle), so a feed page needs no hero. If you add one above it, set its `"titleLevel": "h2"` so the page keeps a single H1. Optionally add an email-form below.
 
 ## header and footer
 
 Not page blocks: they live in `site.json` (`references/format.md`) and show on every page.
 
 - **header**: `layout` (`fixed`, `floating`, `centered`), `links: [{ "label", "href", "isButton" }]` (4–6 links), `ctaLabel` + `ctaHref` (the primary action, same as the homepage hero's), `linkAlignment`, `backdropBlur`, `logoCorners`, and `githubRepo` (`"owner/repo"` or a github.com URL; adds a GitHub icon link) with `showGithubStars: true` to show the live star count beside it. Prefer that over a plain "GitHub" text link. The logo and site name come from FrontLit's **Branding** settings, not from the file; use `get_team_settings` / `update_team_settings` (see `mcp.md`).
-- **footer**: `layout` (`columns`, `centered`, `minimal`), `tagline`, `columns: [{ "title", "links": [{ "label", "href" }] }]`, `copyrightText`, `showThemeSwitcher`.
+- **footer**: `layout` (`columns`, `centered`, `minimal`), `showLogo` (the Branding logo beside the site name; default `true`), `tagline`, `socials` (profile URLs keyed `facebook`, `twitter`, `instagram`, `linkedin`, `youtube`, `discord`, `github`; each shows as an icon link), `columns: [{ "title", "links": [{ "label", "href" }] }]`, `copyrightText`, `showThemeSwitcher`.

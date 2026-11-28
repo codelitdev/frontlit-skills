@@ -8,6 +8,7 @@
       "settings": {
         "layout": "centered",
         "title": "Notes on shipping sites from Git",
+        "titleLevel": "h2",
         "buttonCaption": "",
         "buttonAction": "",
         "secondaryButtonCaption": "",
