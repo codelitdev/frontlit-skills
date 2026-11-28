@@ -46,7 +46,7 @@ So:
 
 - **Title:** the published page's `<title>` is the article title plus ` | <Site name>`. Keep the whole thing within about 60 characters, so the headline itself is usually 40–50. Put the main keyword near the start.
 - **Excerpt:** used as the meta description and the social card text. Aim for 140–160 characters: what the reader gets, in plain words. `create_article` has no excerpt field; set it with `update_article`. Don't leave it empty.
-- **Featured image:** 1200×630 PNG or JPG, used for Open Graph and X large cards. Without one, cards fall back to the site logo. See `references/featured-image.md`.
+- **Featured image:** upload a 1200×630 PNG or JPG (FrontLit stores it as WebP at the same size), used for Open Graph and X large cards. Without one, cards fall back to the site logo. See `references/featured-image.md`.
 - **Indexing:** published posts are indexable and appear in the sitemap. Drafts are not public.
 - **Headings:** the title is the H1. Use `##` for sections and `###` under them; never skip a level, including inside Steps and Tabs blocks. No `#` in the body.
 - **Long-tail questions:** an FAQ section near the end, as `<Accordions>` with one `<Accordion title="…">` per real question, helps search and AI answers.
