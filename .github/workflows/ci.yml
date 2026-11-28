@@ -4,6 +4,10 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    # Daily, to catch FrontLit publishing a schema change between our releases.
+    - cron: "17 6 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -13,6 +17,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  schema-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Bundled page/site schemas match frontlit.app/schema
+        run: node plugins/frontlit/skills/frontlit-pages/scripts/check-schema-sync.mjs
+
   skills:
     runs-on: ubuntu-latest
     steps:
