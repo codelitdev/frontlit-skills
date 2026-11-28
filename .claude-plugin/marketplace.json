@@ -10,7 +10,7 @@
     {
       "name": "frontlit",
       "source": "./plugins/frontlit",
-      "description": "FrontLit docs and landing-page skills, with a bundled FrontLit MCP connection for validation, live status and branding."
+      "description": "FrontLit docs, landing-page and blog-post skills, with a bundled FrontLit MCP connection for validation, live status and branding."
     }
   ]
 }
