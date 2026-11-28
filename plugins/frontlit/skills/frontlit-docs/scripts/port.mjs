@@ -40,22 +40,22 @@ const FENCE_FLAGS = /^(showLineNumbers|live|twoslash|wrap|lines|expandable|noCop
 const ASSET_EXT = /\.(png|jpe?g|gif|svg|webp|avif|ico|pdf|zip|csv|txt|json|ya?ml|mp4|webm|mov|mp3)$/i;
 
 // ---------------------------------------------------------------- arguments
-function usage(message) {
-  console.error(`${message}\n\n${USAGE}`);
-  process.exit(2);
+function usage(message, code = 2) {
+  (code ? console.error : console.log)(`${message}\n\n${USAGE}`);
+  process.exit(code);
 }
 const opts = { from: "auto", prefix: "", assetsBase: "", oldBase: undefined, dryRun: false, json: false };
 const positional = [];
 for (const arg of process.argv.slice(2)) {
   const [flag, value] = arg.split(/=(.*)/s);
-  if (!arg.startsWith("--")) positional.push(arg);
+  if (arg === "--help" || arg === "-h") usage("Convert a docs site into a FrontLit docs folder.", 0);
+  else if (!arg.startsWith("--")) positional.push(arg);
   else if (flag === "--from") opts.from = value;
   else if (flag === "--prefix") opts.prefix = (value ?? "").replace(/^\/+|\/+$/g, "");
   else if (flag === "--assets-base") opts.assetsBase = value ?? "";
   else if (flag === "--old-base") opts.oldBase = (value ?? "").replace(/^\/+|\/+$/g, "");
   else if (arg === "--dry-run") opts.dryRun = true;
   else if (arg === "--json") opts.json = true;
-  else if (arg === "--help" || arg === "-h") usage("Convert a docs site into a FrontLit docs folder.");
   else usage(`Unknown option ${arg}.`);
 }
 if (positional.length !== 2) usage("Pass the source content folder and the target docs folder.");

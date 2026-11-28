@@ -27,6 +27,21 @@ const LINK_KEYS = new Set(["href", "buttonAction", "secondaryButtonAction", "cta
 const LIMITS = { files: 200, bytes: 2 * 1024 * 1024, assetBytes: 10 * 1024 * 1024 };
 
 const args = process.argv.slice(2);
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`Usage: node check.mjs [site-folder | pages-folder] [--fix] [--changed]
+
+Checks <site>/pages/*.json and <site>/site.json against FrontLit's page.v1 / site.v1
+schemas and import rules. Run it from the repository root. With no folder, it looks
+for frontlit/pages or a pages folder whose files use the page.v1 schema.
+
+  --fix      after a clean check, rewrite pages and site.json in canonical form
+  --changed  show warnings in detail only for files changed since HEAD (or untracked);
+             errors are always shown
+  -h, --help show this help
+
+Exit codes: 0 OK, 1 errors found, 2 folder not found or --changed outside Git.`);
+  process.exit(0);
+}
 const fix = args.includes("--fix");
 const root = process.cwd();
 // Reporting filter only: never skip validation or hide blocking errors.

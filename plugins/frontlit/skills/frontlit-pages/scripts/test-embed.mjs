@@ -35,9 +35,9 @@ const opt = (name, def) => {
 };
 const flag = (name) => argv.includes(`--${name}`);
 const file = argv.find((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--") && !["--lint-only", "--json"].includes(argv[i - 1])));
-if (!file || flag("help")) {
+if (!file || flag("help") || argv.includes("-h")) {
   console.log("Usage: test-embed.mjs <snippet.html> [--prefix mlx-] [--out dir] [--widths 1280,390] [--vars theme.css] [--lint-only] [--json]");
-  process.exit(file ? 0 : 1);
+  process.exit(file || flag("help") || argv.includes("-h") ? 0 : 1);
 }
 const content = readFileSync(file, "utf8");
 const outDir = resolve(opt("out", `embed-test-${basename(file).replace(/\.[^.]+$/, "")}`));

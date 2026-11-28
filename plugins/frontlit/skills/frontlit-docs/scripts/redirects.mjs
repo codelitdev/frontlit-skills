@@ -124,14 +124,15 @@ export async function verify(origin, entries, concurrency = 6) {
 async function main() {
   const args = process.argv.slice(2);
   const option = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+  const help = args.includes("--help") || args.includes("-h");
   const file = args.find((a) => !a.startsWith("--"));
-  if (!file || !existsSync(file)) {
-    console.error(
+  if (help || !file || !existsSync(file)) {
+    (help ? console.log : console.error)(
       "Usage: node redirects.mjs <map.json> [--host=<old-host>] [--prefix=<path>] [--json]\n" +
         "       node redirects.mjs <map.json> --site-json=<site.json>\n" +
         "       node redirects.mjs <map.json> --verify=<https://old-host> [--json]",
     );
-    process.exit(2);
+    process.exit(help ? 0 : 2);
   }
   const map = JSON.parse(readFileSync(file, "utf8"));
   const entries = Object.entries(map).filter(([, to]) => typeof to === "string");

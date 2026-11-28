@@ -42,6 +42,20 @@ function findDocsFolder(root) {
 }
 
 const args = process.argv.slice(2);
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`Usage: node check.mjs [docs-folder] [--api-mount=api-reference] [--tree] [--redirects=<map.json>]
+                    [--no-parser] [--parser=<dir>]
+
+  --api-mount  URL path of the generated API reference; links under /docs/<mount>/ aren't checked
+  --tree       print the sidebar FrontLit will build
+  --redirects  check a JSON map of old URL → new path against this folder
+  --no-parser  skip FrontLit's parser and use only the built-in rules (offline)
+  --parser     a directory whose node_modules has @frontlit/text-editor
+  -h, --help   show this help
+
+With no folder, it looks for the folder holding _sections.json. Exit 0 OK, 1 problems, 2 folder not found.`);
+  process.exit(0);
+}
 const option = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
 const apiMount = (option("api-mount") ?? "").replace(/^\/?(docs\/)?|\/$/g, "");
 const showTree = args.includes("--tree");

@@ -136,10 +136,11 @@ function markdownFiles(dir, out = []) {
 async function main() {
   const args = process.argv.slice(2);
   const many = (name) => args.filter((a) => a.startsWith(`--${name}=`)).map((a) => a.slice(name.length + 3));
+  const help = args.includes("--help") || args.includes("-h");
   const folder = args.find((a) => !a.startsWith("--"));
-  if (!folder || !existsSync(folder)) {
-    console.error("Usage: node images.mjs <docs-folder> [--assets=<dir>]... [--from-host=<host>]... [--upload] [--api=<url>] [--map=<file>] [--json]");
-    process.exit(2);
+  if (help || !folder || !existsSync(folder)) {
+    (help ? console.log : console.error)("Usage: node images.mjs <docs-folder> [--assets=<dir>]... [--from-host=<host>]... [--upload] [--api=<url>] [--map=<file>] [--json]");
+    process.exit(help ? 0 : 2);
   }
   const assets = many("assets").map((d) => resolve(d));
   const fromHosts = many("from-host").map((h) => h.toLowerCase().replace(/^https?:\/\/|\/.*$/g, ""));
